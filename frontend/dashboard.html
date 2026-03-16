@@ -37,6 +37,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --muted: #6b7280;
         }
 
         * {
@@ -60,7 +61,7 @@
             height: 100vh;
         }
 
-        /* ===== MODERNIZED NAVBAR ===== */
+        /* ===== NAVBAR ===== */
         .navbar {
             flex-shrink: 0;
             height: 72px;
@@ -223,7 +224,7 @@
             position: relative;
         }
 
-        /* ===== PREMIUM SIDEBAR ===== */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
@@ -345,7 +346,7 @@
             box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
         }
 
-        /* ===== METRIC CARDS (REDESIGNED) ===== */
+        /* ===== METRIC CARDS ===== */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -410,7 +411,7 @@
         .widget-view-card {
             background: white;
             border-radius: 16px;
-            padding: 24px;
+            padding: 16px; /* Reduced from 24px to match configure-dashboard */
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -426,7 +427,7 @@
             font-weight: 600;
             font-size: 1rem;
             color: var(--text-primary);
-            margin-bottom: 20px;
+            margin-bottom: 12px; /* Reduced from 20px */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -435,28 +436,52 @@
         .widget-view-content {
             flex: 1;
             position: relative;
-            min-height: 200px; /* default height */
+            min-height: 150px; /* Reduced fallback */
         }
         
-        /* Widget specific styles */
-        .kpi-widget-container {
+        /* KPI Widget Styles (matching configure-dashboard) */
+        .kpi-card {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             height: 100%;
+            justify-content: center;
         }
-        
+
         .kpi-value {
-            font-size: 3.5rem;
+            font-size: 32px;
             font-weight: 800;
+            color: var(--text-primary);
             line-height: 1;
             margin-bottom: 8px;
         }
-        
+
         .kpi-label {
-            color: var(--text-secondary);
-            font-weight: 500;
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 12px;
         }
+
+        .kpi-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: fit-content;
+        }
+
+        .kpi-trend.up {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .kpi-trend.down {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        /* ------------------------------------------------ */
 
         /* backdrop for mobile */
         .sidebar-backdrop {
@@ -830,7 +855,8 @@
                 const w = widget.width || 4;
                 const h = widget.height || 3;
                 card.style.gridColumn = `span ${w}`;
-                card.style.minHeight = `${h * 80 + 40}px`;  // approximate
+                // minHeight = h * cellHeight + vertical padding (top+bottom = 32px)
+                card.style.minHeight = `${h * 80 + 32}px`;
 
                 const settings = widget.settings || {};
                 const title = settings.title || widget.widget_type.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -850,271 +876,274 @@
             }
 
             // ===== Fill widget content with real data =====
-            // ===== Fill widget content with real data =====
-function renderWidgetContent(widget, containerId, color, settings) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+            function renderWidgetContent(widget, containerId, color, settings) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
 
-    const type = widget.widget_type;
-    const rgb = hexToRgb(color);
-    const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
-    const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+                const type = widget.widget_type;
+                const rgb = hexToRgb(color);
+                const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
+                const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
 
-    // ---------- aggregation helpers (copied from configure-dashboard) ----------
-    const aggregateData = (data, xField, yField, aggregation) => {
-        const groups = {};
-        data.forEach(item => {
-            // Build key based on xField
-            let key;
-            if (xField === 'customer') {
-                // Combine first_name and last_name
-                key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
-            } else if (xField === 'month') {
-                const date = new Date(item.created_at);
-                key = date.toLocaleString('default', { month: 'short' });
-            } else {
-                key = item[xField] || 'Unknown';
-            }
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(item);
-        });
+                // ---------- aggregation helpers (copied from configure-dashboard) ----------
+                const aggregateData = (data, xField, yField, aggregation) => {
+                    const groups = {};
+                    data.forEach(item => {
+                        // Build key based on xField
+                        let key;
+                        if (xField === 'customer') {
+                            // Combine first_name and last_name
+                            key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
+                        } else if (xField === 'month') {
+                            const date = new Date(item.created_at);
+                            key = date.toLocaleString('default', { month: 'short' });
+                        } else {
+                            key = item[xField] || 'Unknown';
+                        }
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(item);
+                    });
 
-        const labels = Object.keys(groups);
-        let values = labels.map(key => {
-            const group = groups[key];
-            if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
-            if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
-            if (aggregation === 'count') return group.length;
-            if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
-            if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
-            return 0;
-        });
-        return { labels, values };
-    };
+                    const labels = Object.keys(groups);
+                    let values = labels.map(key => {
+                        const group = groups[key];
+                        if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                        if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                        if (aggregation === 'count') return group.length;
+                        if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
+                        if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
+                        return 0;
+                    });
+                    return { labels, values };
+                };
 
-    const getTimeSeriesData = (data, yField, aggregation) => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const groups = {};
-        data.forEach(item => {
-            const date = new Date(item.created_at);
-            const month = months[date.getMonth()];
-            if (!groups[month]) groups[month] = [];
-            groups[month].push(item);
-        });
+                const getTimeSeriesData = (data, yField, aggregation) => {
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const groups = {};
+                    data.forEach(item => {
+                        const date = new Date(item.created_at);
+                        const month = months[date.getMonth()];
+                        if (!groups[month]) groups[month] = [];
+                        groups[month].push(item);
+                    });
 
-        const labels = months.filter(m => groups[m] && groups[m].length > 0);
-        let values = labels.map(month => {
-            const group = groups[month];
-            if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
-            if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
-            if (aggregation === 'count') return group.length;
-            if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
-            if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
-            return 0;
-        });
-        return { labels, values };
-    };
+                    const labels = months.filter(m => groups[m] && groups[m].length > 0);
+                    let values = labels.map(month => {
+                        const group = groups[month];
+                        if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                        if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                        if (aggregation === 'count') return group.length;
+                        if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
+                        if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
+                        return 0;
+                    });
+                    return { labels, values };
+                };
 
-    // ---------- render by type ----------
-    if (type === 'bar_chart' || type === 'line_chart' || type === 'area_chart' || type === 'scatter_plot' || type === 'pie_chart') {
-        const canvas = document.createElement('canvas');
-        container.appendChild(canvas);
+                // ---------- render by type ----------
+                if (type === 'bar_chart' || type === 'line_chart' || type === 'area_chart' || type === 'scatter_plot' || type === 'pie_chart') {
+                    const canvas = document.createElement('canvas');
+                    container.appendChild(canvas);
 
-        let chartConfig = null;
-        const xField = settings.xAxis || 'product';
-        const yField = settings.yAxis || 'total_amount';
-        const agg = settings.aggregation || 'sum';
+                    let chartConfig = null;
+                    const xField = settings.xAxis || 'product';
+                    const yField = settings.yAxis || 'total_amount';
+                    const agg = settings.aggregation || 'sum';
 
-        if (type === 'bar_chart') {
-            const { labels, values } = aggregateData(ordersData, xField, yField, agg);
-            chartConfig = {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: `${agg} of ${yField}`,
-                        data: values,
-                        backgroundColor: chartBgColor,
-                        borderColor: chartColor,
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                }
-            };
-        } else if (type === 'line_chart') {
-            const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
-            chartConfig = {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: `${agg} of ${yField}`,
-                        data: values,
-                        borderColor: chartColor,
-                        backgroundColor: chartBgColor,
-                        tension: 0.4,
-                        fill: false,
-                        pointRadius: 4,
-                        pointBackgroundColor: chartColor
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                }
-            };
-        } else if (type === 'area_chart') {
-            const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
-            chartConfig = {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: `${agg} of ${yField}`,
-                        data: values,
-                        borderColor: chartColor,
-                        backgroundColor: chartBgColor,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                }
-            };
-        } else if (type === 'scatter_plot') {
-            const scatterData = ordersData.map(order => ({
-                x: order.quantity || 0,
-                y: order.unit_price || 0
-            }));
-            chartConfig = {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Quantity vs Price',
-                        data: scatterData,
-                        backgroundColor: chartColor,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { title: { display: true, text: 'Quantity' } },
-                        y: { title: { display: true, text: 'Price ($)' } }
+                    if (type === 'bar_chart') {
+                        const { labels, values } = aggregateData(ordersData, xField, yField, agg);
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    backgroundColor: chartBgColor,
+                                    borderColor: chartColor,
+                                    borderWidth: 2,
+                                    borderRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'line_chart') {
+                        const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    borderColor: chartColor,
+                                    backgroundColor: chartBgColor,
+                                    tension: 0.4,
+                                    fill: false,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: chartColor
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'area_chart') {
+                        const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    borderColor: chartColor,
+                                    backgroundColor: chartBgColor,
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'scatter_plot') {
+                        const scatterData = ordersData.map(order => ({
+                            x: order.quantity || 0,
+                            y: order.unit_price || 0
+                        }));
+                        chartConfig = {
+                            type: 'scatter',
+                            data: {
+                                datasets: [{
+                                    label: 'Quantity vs Price',
+                                    data: scatterData,
+                                    backgroundColor: chartColor,
+                                    pointRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { title: { display: true, text: 'Quantity' } },
+                                    y: { title: { display: true, text: 'Price ($)' } }
+                                }
+                            }
+                        };
+                    } else if (type === 'pie_chart') {
+                        const statusGroups = {};
+                        ordersData.forEach(order => {
+                            const status = order.status || 'Unknown';
+                            statusGroups[status] = (statusGroups[status] || 0) + 1;
+                        });
+                        chartConfig = {
+                            type: 'doughnut',
+                            data: {
+                                labels: Object.keys(statusGroups),
+                                datasets: [{
+                                    data: Object.values(statusGroups),
+                                    backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } },
+                                cutout: '60%'
+                            }
+                        };
+                    }
+
+                    if (chartConfig) {
+                        chartInstances[widget.id] = new Chart(canvas, chartConfig);
                     }
                 }
-            };
-        } else if (type === 'pie_chart') {
-            const statusGroups = {};
-            ordersData.forEach(order => {
-                const status = order.status || 'Unknown';
-                statusGroups[status] = (statusGroups[status] || 0) + 1;
-            });
-            chartConfig = {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(statusGroups),
-                    datasets: [{
-                        data: Object.values(statusGroups),
-                        backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } },
-                    cutout: '60%'
+                else if (type === 'data_table') {
+                    const tableId = `table-${widget.id}`;
+                    container.innerHTML = `<table id="${tableId}" class="display" style="width:100%"></table>`;
+
+                    // Define columns with proper rendering for customer name
+                    const columns = [
+                        {
+                            title: 'Customer',
+                            render: (data, type, row) => {
+                                const fullName = `${row.first_name || ''} ${row.last_name || ''}`.trim();
+                                return fullName || 'N/A';
+                            }
+                        },
+                        { title: 'Product', data: 'product' },
+                        { title: 'Qty', data: 'quantity' },
+                        {
+                            title: 'Total',
+                            data: 'total_amount',
+                            render: (data) => `$${parseFloat(data || 0).toFixed(2)}`
+                        },
+                        { title: 'Status', data: 'status' }
+                    ];
+
+                    // jQuery DataTable
+                    const $table = $(`#${tableId}`);
+                    tableInstances[widget.id] = $table.DataTable({
+                        data: ordersData,
+                        columns: columns,
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 25],
+                        order: [[3, 'desc']], // order by Total column (index 3)
+                        language: { search: '', searchPlaceholder: 'Search...' }
+                    });
                 }
-            };
-        }
+                else if (type.startsWith('kpi_')) {
+                    // compute KPI from ordersData
+                    let value = '';
+                    let trendValue = '+12.5%';  // placeholder trend
+                    let trendClass = 'up';
 
-        if (chartConfig) {
-            chartInstances[widget.id] = new Chart(canvas, chartConfig);
-        }
-    }
-    else if (type === 'data_table') {
-        const tableId = `table-${widget.id}`;
-        container.innerHTML = `<table id="${tableId}" class="display" style="width:100%"></table>`;
+                    if (type === 'kpi_revenue') {
+                        const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+                        value = `$${total.toLocaleString()}`;
+                    } else if (type === 'kpi_orders') {
+                        value = ordersData.length.toLocaleString();
+                    } else if (type === 'kpi_average') {
+                        const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+                        const avg = ordersData.length ? total / ordersData.length : 0;
+                        value = `$${avg.toFixed(2)}`;
+                    } else if (type === 'kpi_pending') {
+                        const pending = ordersData.filter(o => o.status === 'Pending').length;
+                        value = pending.toLocaleString();
+                        // For pending, trend might be negative
+                        trendValue = '-5.1%';
+                        trendClass = 'down';
+                    }
 
-        // Define columns with proper rendering for customer name
-        const columns = [
-            {
-                title: 'Customer',
-                render: (data, type, row) => {
-                    const fullName = `${row.first_name || ''} ${row.last_name || ''}`.trim();
-                    return fullName || 'N/A';
+                    const label = settings.title || type.replace('kpi_','').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    // Smaller arrow (w-3.5 h-3.5) for better fit
+                    const trendIcon = trendClass === 'up' 
+                        ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
+                        : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
+
+                    container.innerHTML = `
+                        <div class="kpi-card">
+                            <div class="kpi-value" style="color: ${color}">${value}</div>
+                            <div class="kpi-label">${label}</div>
+                            <div class="kpi-trend ${trendClass}">
+                                ${trendIcon}
+                                ${trendValue} this month
+                            </div>
+                        </div>
+                    `;
                 }
-            },
-            { title: 'Product', data: 'product' },
-            { title: 'Qty', data: 'quantity' },
-            {
-                title: 'Total',
-                data: 'total_amount',
-                render: (data) => `$${parseFloat(data || 0).toFixed(2)}`
-            },
-            { title: 'Status', data: 'status' }
-        ];
-
-        // jQuery DataTable
-        const $table = $(`#${tableId}`);
-        tableInstances[widget.id] = $table.DataTable({
-            data: ordersData,
-            columns: columns,
-            pageLength: 5,
-            lengthMenu: [5, 10, 25],
-            order: [[3, 'desc']], // order by Total column (index 3)
-            language: { search: '', searchPlaceholder: 'Search...' }
-        });
-    }
-    else if (type.startsWith('kpi_')) {
-        // compute KPI from ordersData
-        let value = '', trend = '+12.5%';  // placeholder trend
-        if (type === 'kpi_revenue') {
-            const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-            value = `$${total.toLocaleString()}`;
-        } else if (type === 'kpi_orders') {
-            value = ordersData.length.toLocaleString();
-        } else if (type === 'kpi_average') {
-            const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-            const avg = ordersData.length ? total / ordersData.length : 0;
-            value = `$${avg.toFixed(2)}`;
-        } else if (type === 'kpi_pending') {
-            const pending = ordersData.filter(o => o.status === 'Pending').length;
-            value = pending.toLocaleString();
-        }
-
-        const label = settings.title || type.replace('kpi_','').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
-        
-        // Create trend direction class
-        const trendUp = trend.includes('+');
-        const trendClass = trendUp ? 'up' : 'down';
-        const trendIcon = trendUp
-            ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
-            : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
-
-        container.innerHTML = `
-            <div class="kpi-card">
-                <div class="kpi-value" style="color: ${color}">${value}</div>
-                <div class="kpi-label">${label}</div>
-                <div class="kpi-trend ${trendClass}">
-                    ${trendIcon}
-                    ${trend} this month
-                </div>
-            </div>
-        `;
-    }
-}
+            }
 
             // ===== Update metric cards (top 3) based on ordersData =====
             function updateMetricCards() {
