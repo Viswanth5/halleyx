@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halleyx · Login</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --body-bg: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+
+        .form-container {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.4);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: #f8fafc;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        .error, .success {
+            margin-top: 16px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 500;
+            display: none; /* Will be set to block by JS */
+        }
+
+        .error {
+            background-color: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .success {
+            background-color: #f0fdf4;
+            color: #059669;
+            border: 1px solid #bbf7d0;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-link a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Signup Form -->
+    <div id="signupContainer" class="form-container">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h2>Create Account</h2>
+            <p class="subtitle">Start managing your dashboard today</p>
+        </div>
+
+        <input type="text" id="signupName" placeholder="Full Name" required>
+        <input type="email" id="signupEmail" placeholder="Email Address" required>
+        <input type="password" id="signupPassword" placeholder="Create Password" required>
+        <button id="signupBtn">Sign Up</button>
+        <div id="signupMessage" class="error"></div>
+        
+        <div class="toggle-link">
+            Already have an account? <a onclick="showLogin()">Log in</a>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginContainer" class="form-container" style="display: none;">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Log in to your Halleyx dashboard</p>
+        </div>
+
+        <input type="email" id="loginEmail" placeholder="Email Address" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button id="loginBtn">Log In</button>
+        <div id="loginMessage" class="error"></div>
+        
+        <div class="toggle-link">
+            Don't have an account? <a onclick="showSignup()">Sign up</a>
+        </div>
+    </div>
+
+    <!-- Include Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // ====== CONFIGURATION ======
+        var SUPABASE_URL = 'https://icwvcbzhrxrrknxzmtbk.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imljd3ZjYnpocnhycmtueHptdGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTM2NzksImV4cCI6MjA4OTA2OTY3OX0.dMOgiB5afMkJvJpwrCI9elyBb5THqbTuqJaq6jLsbPs';
+
+        console.log('Supabase URL:', SUPABASE_URL);
+        console.log('Anon Key (first 20 chars):', SUPABASE_ANON_KEY.substring(0, 20) + '...');
+
+        // Initialize Supabase
+        if (typeof window.supabase === 'undefined') {
+            console.error('❌ Supabase library not loaded. Check network tab.');
+        }
+
+        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase client created.');
+
+        // DOM elements
+        var signupContainer = document.getElementById('signupContainer');
+        var loginContainer = document.getElementById('loginContainer');
+
+        // Helper to show messages
+        function showMessage(containerId, text, isSuccess) {
+            var msgDiv = document.getElementById(containerId);
+            msgDiv.textContent = text;
+            msgDiv.className = isSuccess ? 'success' : 'error';
+            // Ensure the message is visible
+            msgDiv.style.display = 'block'; 
+        }
+
+        // Signup
+        document.getElementById('signupBtn').addEventListener('click', async function() {
+            console.log('Signup button clicked');
+            var name = document.getElementById('signupName').value.trim();
+            var email = document.getElementById('signupEmail').value.trim();
+            var password = document.getElementById('signupPassword').value;
+
+            if (!name || !email || !password) {
+                showMessage('signupMessage', 'Please fill all fields.', false);
+                return;
+            }
+
+            showMessage('signupMessage', '', false);
+            try {
+                var { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { name: name }
+                    }
+                });
+                if (error) {
+                    console.error('Signup error:', error);
+                    showMessage('signupMessage', error.message, false);
+                } else {
+                    console.log('Signup success:', data);
+                    showMessage('signupMessage', 'Signup successful! Please log in.', true);
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    setTimeout(showLogin, 1500);
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                showMessage('signupMessage', 'An error occurred. Check console.', false);
+            }
+        });
+
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            console.log('Login button clicked');
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessage('loginMessage', 'Please fill all fields.', false);
+                return;
+            }
+
+            showMessage('loginMessage', '', false);
+            try {
+                var { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                if (error) {
+                    console.error('Login error:', error);
+                    showMessage('loginMessage', error.message, false);
+                } else {
+                    console.log('Login success:', data);
+                    // Redirect to dashboard.html
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                showMessage('loginMessage', 'An error occurred. Check console.', false);
+            }
+        });
+
+        // Check session on load – if already logged in, go to dashboard
+        (async function() {
+            try {
+                var { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    console.log('User already logged in, redirecting to dashboard');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showSignup(); // ensure signup is shown
+                }
+            } catch (err) {
+                console.error('Error checking session:', err);
+            }
+        })();
+
+        // Global toggle functions
+        window.showSignup = function() {
+            signupContainer.style.display = 'block';
+            loginContainer.style.display = 'none';
+            clearMessages();
+        };
+
+        window.showLogin = function() {
+            signupContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+            clearMessages();
+        };
+
+        function clearMessages() {
+            var signupMsg = document.getElementById('signupMessage');
+            var loginMsg = document.getElementById('loginMessage');
+            signupMsg.textContent = '';
+            signupMsg.style.display = 'none';
+            loginMsg.textContent = '';
+            loginMsg.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
