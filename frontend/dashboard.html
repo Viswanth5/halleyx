@@ -8,9 +8,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --body-bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -19,137 +47,175 @@
         }
 
         body {
-            background-color: #F5F7FB;
+            background-color: var(--body-bg);
             height: 100vh;
             overflow: hidden;
+            color: var(--text-primary);
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
 
         .app {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background-color: #F5F7FB;
         }
 
-        /* ===== NAVBAR ===== */
+        /* ===== MODERNIZED NAVBAR ===== */
         .navbar {
             flex-shrink: 0;
-            height: 70px;
+            height: 72px;
             background: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 28px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-            border-bottom: 1px solid rgba(0,0,0,0.03);
+            padding: 0 32px;
+            border-bottom: 1px solid var(--border-color);
             z-index: 30;
         }
 
         .navbar-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
+
         .menu-toggle {
             background: none;
             border: none;
-            font-size: 1.5rem;
-            color: #4F46E5;
+            font-size: 1.4rem;
+            color: var(--text-secondary);
             cursor: pointer;
             display: none;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
+        
+        .menu-toggle:hover {
+            background: var(--body-bg);
+            color: var(--primary);
+        }
+
         .app-name {
-            font-weight: 700;
-            font-size: 1.3rem;
-            letter-spacing: -0.3px;
-            background: linear-gradient(135deg, #4F46E5 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-name::before {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.4);
         }
 
         .navbar-center {
             display: flex;
             align-items: center;
-            gap: 16px;
-            background: #F5F7FB;
-            padding: 6px 16px;
-            border-radius: 40px;
-            border: 1px solid #e9edf4;
+            gap: 12px;
+            background: var(--body-bg);
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
+        
+        .navbar-center:focus-within {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
         .navbar-center label {
             font-size: 0.9rem;
             font-weight: 500;
-            color: #4b5563;
+            color: var(--text-secondary);
         }
+        
         .date-dropdown {
             border: none;
             background: transparent;
-            font-weight: 500;
-            color: #1F2937;
-            padding: 6px 8px;
-            border-radius: 30px;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 6px;
             outline: none;
             cursor: pointer;
             font-size: 0.95rem;
-        }
-        .date-dropdown:hover {
-            background: white;
         }
 
         .navbar-right {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
+
         .user-info {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #F5F7FB;
-            padding: 5px 12px 5px 8px;
-            border-radius: 40px;
-            border: 1px solid #e0e7ff;
+            gap: 12px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 12px;
+            transition: background 0.2s;
+            cursor: pointer;
         }
-        .user-info i {
-            font-size: 1.8rem;
-            color: #4F46E5;
+        
+        .user-info:hover {
+            background: var(--body-bg);
         }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
         .user-name {
             font-weight: 600;
             font-size: 0.95rem;
-            color: #1F2937;
+            color: var(--text-primary);
             max-width: 140px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
         .logout-btn {
-            background: none;
-            border: 1px solid #e0e7ff;
-            background-color: white;
-            color: #4F46E5;
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             font-weight: 600;
-            font-size: 0.95rem;
-            padding: 8px 18px;
-            border-radius: 40px;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
         }
-        .logout-btn i { font-size: 1rem; }
+        
         .logout-btn:hover {
-            background-color: #4F46E5;
-            border-color: #4F46E5;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 14px rgba(79, 70, 229, 0.25);
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: var(--danger);
         }
 
-        /* ===== MAIN FLEX CONTAINER ===== */
+        /* ===== MAIN CONTAINER ===== */
         .main-container {
             display: flex;
             flex: 1;
@@ -157,131 +223,210 @@
             position: relative;
         }
 
-        /* ===== SIDEBAR ===== */
+        /* ===== PREMIUM SIDEBAR ===== */
         .sidebar {
             width: 260px;
-            background: #1F2937;
+            background: var(--sidebar-bg);
             color: #FFFFFF;
             display: flex;
             flex-direction: column;
             transition: width 0.25s ease;
             overflow-y: auto;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+            overflow-x: hidden;
+            border-right: 1px solid rgba(255,255,255,0.05);
             z-index: 20;
         }
 
         .sidebar-nav {
-            padding: 28px 16px;
+            padding: 24px 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
 
         .menu-item {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 14px 18px;
-            border-radius: 14px;
-            color: #e0e7ff;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-tertiary);
             text-decoration: none;
             font-weight: 500;
             transition: all 0.15s;
             white-space: nowrap;
+            position: relative;
         }
+        
         .menu-item i {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             width: 24px;
             text-align: center;
-            color: #9ca3af;
-            transition: color 0.15s;
+            transition: transform 0.2s;
         }
-        .menu-item span { font-size: 1rem; }
-        .menu-item:hover { background: #374151; color: white; }
-        .menu-item:hover i { color: #4F46E5; }
+        
+        .menu-item span { 
+            font-size: 0.95rem; 
+            letter-spacing: -0.2px;
+        }
+        
+        .menu-item:hover { 
+            background: var(--sidebar-hover); 
+            color: #ffffff; 
+        }
+        
+        .menu-item:hover i { 
+            transform: scale(1.1); 
+            color: var(--primary-light); 
+        }
+        
         .menu-item.active {
-            background: #4F46E5;
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.05) 100%);
             color: white;
-            box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+            box-shadow: inset 3px 0 0 var(--primary);
         }
-        .menu-item.active i { color: white; }
+        
+        .menu-item.active i { 
+            color: var(--primary-light); 
+        }
 
-        /* main content */
+        /* ===== MAIN CONTENT ===== */
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 32px 36px;
-            background-color: #F5F7FB;
+            padding: 32px 40px;
+            background-color: var(--body-bg);
         }
 
         .welcome-card {
             background: white;
-            border-radius: 24px;
-            padding: 36px 40px;
-            box-shadow: 0 15px 40px -10px rgba(0,0,0,0.05);
-            max-width: 700px;
-            border: 1px solid rgba(255,255,255,0.6);
-            transition: transform 0.2s;
-            margin-bottom: 40px;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .welcome-card h2 {
-            font-size: 2.2rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #1F2937;
+
+        .welcome-text h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
         }
-        .welcome-card p {
-            font-size: 1.1rem;
-            color: #6b7280;
-            margin-bottom: 28px;
+        
+        .welcome-text p {
+            font-size: 1rem;
+            color: var(--text-secondary);
         }
+
         .configure-btn {
-            background: #4F46E5;
+            background: var(--text-primary);
             color: white;
             border: none;
-            padding: 14px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 10px;
             cursor: pointer;
-            box-shadow: 0 10px 18px -8px #4F46E5;
             transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         }
-        .configure-btn i { font-size: 1.2rem; }
+        
         .configure-btn:hover {
-            background: #6366f1;
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 18px 25px -10px #4F46E5;
+            background: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
         }
 
-        /* ===== DASHBOARD WIDGETS GRID ===== */
+        /* ===== METRIC CARDS (REDESIGNED) ===== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .metric-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+
+        /* ===== WIDGET GRID ===== */
         #dashboardWidgets {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
             gap: 20px;
-            margin-top: 10px;
         }
 
         .widget-view-card {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.02);
-            border: 1px solid rgba(0,0,0,0.03);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .widget-view-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .widget-view-header {
             font-weight: 600;
             font-size: 1rem;
-            color: #1F2937;
-            margin-bottom: 16px;
+            color: var(--text-primary);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -290,35 +435,27 @@
         .widget-view-content {
             flex: 1;
             position: relative;
-            min-height: 150px;
+            min-height: 200px; /* default height */
         }
         
-        /* KPI specific styles */
-        .kpi-view-value {
-            font-size: 32px;
+        /* Widget specific styles */
+        .kpi-widget-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .kpi-value {
+            font-size: 3.5rem;
             font-weight: 800;
+            line-height: 1;
             margin-bottom: 8px;
         }
-        .kpi-view-label {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-        .kpi-view-trend {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-        .kpi-view-trend.up { background: #D1FAE5; color: #059669; }
-        .kpi-view-trend.down { background: #FEE2E2; color: #DC2626; }
-
-        /* metric cards (Keep existing) */
-        .metric-card {
-             background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 18px rgba(0,0,0,0.02);
+        
+        .kpi-label {
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
         /* backdrop for mobile */
@@ -326,42 +463,79 @@
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3);
+            background: rgba(15, 23, 42, 0.5);
             z-index: 15;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
+        }
+
+        /* DataTables tweaks */
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 0.85rem !important;
+            margin-left: 8px;
+        }
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            background: #fff;
+        }
+        table.dataTable thead th {
+            background: #f8fafc !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: 12px 16px !important;
+        }
+        table.dataTable tbody td {
+            padding: 12px 16px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        table.dataTable tbody tr:hover {
+            background-color: #f8fafc !important;
         }
 
         /* ===== RESPONSIVE ===== */
         @media (min-width: 769px) and (max-width: 1024px) {
-            .sidebar { width: 90px; }
+            .sidebar { width: 80px; }
             .menu-item span { display: none; }
             .menu-item { justify-content: center; padding: 16px 0; }
-            .menu-item i { font-size: 1.8rem; margin: 0; }
+            .menu-item.active { box-shadow: inset 3px 0 0 var(--primary); }
         }
 
         @media (max-width: 768px) {
-            .navbar { padding: 0 20px; }
+            .navbar { padding: 0 20px; height: 64px; }
             .menu-toggle { display: inline-block; }
-            .app-name { font-size: 1.2rem; }
             .navbar-center { display: none; }
             .main-container { display: block; }
             .sidebar {
-                position: fixed; top: 70px; left: 0; bottom: 0;
-                width: 260px; transform: translateX(-100%);
+                position: fixed; top: 64px; left: 0; bottom: 0;
+                width: 280px; transform: translateX(-100%);
                 transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
-                z-index: 25; box-shadow: none;
+                z-index: 25;
             }
-            .sidebar.open { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
-            .content { width: 100%; padding: 24px 18px; }
+            .sidebar.open { transform: translateX(0); }
+            .content { width: 100%; padding: 24px 20px; }
             .sidebar-backdrop.active { display: block; }
-            .welcome-card { padding: 28px 20px; }
-            .welcome-card h2 { font-size: 1.8rem; }
             
-            /* Responsive grid for widgets */
+            .welcome-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
             #dashboardWidgets {
                 display: flex;
                 flex-direction: column;
             }
+            
             .widget-view-card {
                 width: 100% !important;
                 height: auto !important;
@@ -372,8 +546,6 @@
         @media (max-width: 500px) {
             .user-info .user-name { display: none; }
         }
-
-        hr { opacity: 0.1; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -384,11 +556,11 @@
                 <button class="menu-toggle" id="menuToggle" aria-label="Menu">
                     <i class="fas fa-bars"></i>
                 </button>
-                <span class="app-name">Halleyx Dashboard Builder</span>
+                <div class="app-name">Halleyx</div>
             </div>
 
             <div class="navbar-center">
-                <label for="dateFilter"><i class="far fa-calendar-alt" style="margin-right:6px; color:#4F46E5;"></i>Show data for</label>
+                <label for="dateFilter"><i class="far fa-calendar" style="margin-right:6px; color:var(--primary);"></i> Period</label>
                 <select id="dateFilter" class="date-dropdown">
                     <option value="all">All time</option>
                     <option value="today">Today</option>
@@ -400,7 +572,9 @@
 
             <div class="navbar-right">
                 <div class="user-info" id="userInfo">
-                    <i class="fas fa-user-circle"></i>
+                    <div class="user-avatar">
+                        <i class="fas fa-user" style="font-size: 0.9rem;"></i>
+                    </div>
                     <span class="user-name" id="userNameDisplay">Loading...</span>
                 </div>
                 <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
@@ -411,16 +585,16 @@
             <aside class="sidebar" id="sidebar">
                 <nav class="sidebar-nav">
                     <a href="dashboard.html" class="menu-item active" id="dashboardLink">
-                        <i class="fas fa-tachometer-alt"></i>
+                        <i class="fas fa-th-large"></i>
                         <span>Dashboard</span>
                     </a>
                     <a href="orders.html" class="menu-item" id="ordersLink">
-                        <i class="fas fa-box"></i>
+                        <i class="fas fa-receipt"></i>
                         <span>Customer Orders</span>
                     </a>
                     <a href="configure-dashboard.html" class="menu-item" id="configureLink">
-                        <i class="fas fa-cog"></i>
-                        <span>Configure Dashboard</span>
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Configure</span>
                     </a>
                 </nav>
             </aside>
@@ -429,37 +603,53 @@
 
             <main class="content">
                 <div class="welcome-card">
-                    <h2 id="welcomeHeading">Welcome back, <span id="welcomeName">User</span> 👋</h2>
-                    <p><i class="fas fa-chart-pie" style="color:#4F46E5; margin-right:8px;"></i>Manage and visualize your business metrics.</p>
+                    <div class="welcome-text">
+                        <h2 id="welcomeHeading">Welcome back, <span id="welcomeName">User</span></h2>
+                        <p>Here's what's happening with your projects today.</p>
+                    </div>
                     <button class="configure-btn" id="configureDashboardBtn">
-                        <i class="fas fa-plus-circle"></i> Configure Dashboard
+                        <i class="fas fa-plus"></i> Add Widget
                     </button>
                 </div>
 
-                <!-- Dynamic metric cards (filtered by user) -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 22px; margin-bottom: 40px;">
+                <!-- Redesigned Metrics -->
+                <div class="metrics-grid">
                     <div class="metric-card">
-                        <i class="fas fa-users" style="color:#4F46E5; font-size: 2rem; margin-bottom: 12px;"></i>
-                        <h4 style="font-weight: 500;">Total customers</h4>
-                        <p style="font-size: 2rem; font-weight: 600;" id="totalCustomers">0</p>
+                        <div class="metric-header">
+                            <span class="metric-label">Total Customers</span>
+                            <div class="metric-icon-box" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="totalCustomers">0</div>
                     </div>
+                    
                     <div class="metric-card">
-                        <i class="fas fa-chart-line" style="color:#4F46E5; font-size: 2rem; margin-bottom: 12px;"></i>
-                        <h4 style="font-weight: 500;">Revenue (MTD)</h4>
-                        <p style="font-size: 2rem; font-weight: 600;" id="totalRevenue">$0</p>
+                        <div class="metric-header">
+                            <span class="metric-label">Revenue (MTD)</span>
+                            <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="totalRevenue">$0</div>
                     </div>
+                    
                     <div class="metric-card">
-                        <i class="fas fa-clock" style="color:#4F46E5; font-size: 2rem; margin-bottom: 12px;"></i>
-                        <h4 style="font-weight: 500;">Pending orders</h4>
-                        <p style="font-size: 2rem; font-weight: 600;" id="pendingOrders">0</p>
+                        <div class="metric-header">
+                            <span class="metric-label">Pending Orders</span>
+                            <div class="metric-icon-box" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="pendingOrders">0</div>
                     </div>
                 </div>
 
-                <!-- Container for saved widgets (static sample data – no user leakage) -->
-                <h3 style="margin-bottom: 20px; font-weight: 600; color: #374151;">Your Widgets</h3>
-                <div id="dashboardWidgets">
-                    <!-- Widgets will be injected here by JS -->
+                <!-- Widgets Section -->
+                <div class="section-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Analytics Overview</h3>
                 </div>
+                <div id="dashboardWidgets"></div>
 
             </main>
         </div>
@@ -473,7 +663,7 @@
 
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // DOM elements
+            // ===== DOM elements =====
             const userNameSpan = document.getElementById('userNameDisplay');
             const welcomeNameSpan = document.getElementById('welcomeName');
             const logoutBtn = document.getElementById('logoutBtn');
@@ -482,22 +672,29 @@
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
             const dateFilter = document.getElementById('dateFilter');
-
-            // Metric card elements
             const totalCustomersEl = document.getElementById('totalCustomers');
             const totalRevenueEl = document.getElementById('totalRevenue');
             const pendingOrdersEl = document.getElementById('pendingOrders');
+            const widgetsContainer = document.getElementById('dashboardWidgets');
 
-            // Static sample data for widgets (does NOT contain user data)
-            const sampleData = {
-                products: ['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books', 'Toys'],
-                months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                sales: [42500, 38200, 51800, 46300, 55200, 49100, 58700, 52300, 61400, 57800, 68200, 72500],
-                orders: [320, 285, 410, 365, 430, 390, 475, 420, 510, 485, 560, 610],
-                orderStatus: { completed: 45, pending: 28, processing: 18, cancelled: 9 }
-            };
+            // ===== Global state =====
+            let currentUser = null;
+            let ordersData = [];                 // filtered by user + date range
+            let widgetsList = [];                 // loaded from dashboard_widgets
+            const chartInstances = {};            // key: widgetId (from DB)
+            const tableInstances = {};             // key: widgetId
 
-            // ===== AUTHENTICATION =====
+            // ===== Helper: hex to rgb =====
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 79, g: 70, b: 229 };
+            }
+
+            // ===== Authentication =====
             async function checkUser() {
                 try {
                     const { data: { user }, error } = await supabase.auth.getUser();
@@ -505,6 +702,7 @@
                         window.location.href = 'index.html';
                         return;
                     }
+                    currentUser = user;
                     const name = user.user_metadata?.name || user.email?.split('@')[0] || 'User';
                     userNameSpan.textContent = name;
                     welcomeNameSpan.textContent = name.split(' ')[0] || name;
@@ -514,7 +712,7 @@
                 }
             }
 
-            // ===== LOGOUT =====
+            // ===== Logout =====
             async function logout() {
                 try {
                     const { error } = await supabase.auth.signOut();
@@ -530,225 +728,405 @@
                 logout();
             });
 
-            // ===== DASHBOARD METRICS (filtered by user_id) =====
-            async function loadDashboardMetrics(filterValue = 'all') {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+            // ===== Fetch orders (filtered by user and date) =====
+            async function fetchOrders(dateRange = 'all') {
+                if (!currentUser) return [];
 
                 let query = supabase
                     .from('customer_orders')
                     .select('*')
-                    .eq('user_id', user.id);          // <-- Only this user's orders
+                    .eq('user_id', currentUser.id);
 
                 const now = new Date();
                 let startDate = null;
-
-                switch (filterValue) {
+                switch (dateRange) {
                     case 'today': startDate = new Date(now.setHours(0,0,0,0)).toISOString(); break;
                     case '7d': startDate = new Date(now.setDate(now.getDate() - 7)).toISOString(); break;
                     case '30d': startDate = new Date(now.setDate(now.getDate() - 30)).toISOString(); break;
                     case '90d': startDate = new Date(now.setDate(now.getDate() - 90)).toISOString(); break;
                     default: startDate = null;
                 }
-
                 if (startDate) query = query.gte('created_at', startDate);
 
                 const { data, error } = await query;
                 if (error) {
-                    console.error('Error fetching dashboard data:', error);
+                    console.error('Error fetching orders:', error);
+                    return [];
+                }
+                ordersData = data || [];
+                return ordersData;
+            }
+
+            // ===== Load the most recent dashboard config + widgets for this user =====
+            async function loadUserConfig() {
+                if (!currentUser) return;
+
+                // get latest dashboard id
+                const { data: dashboards, error: dashError } = await supabase
+                    .from('dashboard_configs')
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (dashError || !dashboards || dashboards.length === 0) {
+                    // No saved config – leave widgets container empty (show nothing)
+                    widgetsList = [];
                     return;
                 }
 
-                const totalCustomers = data.length;
-                const totalRevenue = data.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0);
-                const pendingOrders = data.filter(order => order.status === 'Pending').length;
+                const dashboardId = dashboards[0].id;
+
+                // fetch all widgets for this dashboard
+                const { data: widgets, error: widgetError } = await supabase
+                    .from('dashboard_widgets')
+                    .select('*')
+                    .eq('dashboard_id', dashboardId);
+
+                if (widgetError) {
+                    console.error('Error loading widgets:', widgetError);
+                    widgetsList = [];
+                } else {
+                    widgetsList = widgets || [];
+                }
+            }
+
+            // ===== Clean up existing charts/tables before re-render =====
+            function destroyAllWidgets() {
+                Object.values(chartInstances).forEach(chart => chart?.destroy());
+                Object.values(tableInstances).forEach(table => table?.destroy());
+                for (let key in chartInstances) delete chartInstances[key];
+                for (let key in tableInstances) delete tableInstances[key];
+                widgetsContainer.innerHTML = '';
+            }
+
+            // ===== Render all widgets using current ordersData and widgetsList =====
+            function renderAllWidgets() {
+                destroyAllWidgets();
+
+                if (!widgetsList.length) {
+                    // optional empty message
+                    widgetsContainer.innerHTML = '<p style="grid-column:span 12; text-align:center; color:var(--text-secondary); padding: 40px;">No widgets configured. Click "Add Widget" to start.</p>';
+                    return;
+                }
+
+                // sort by pos_y then pos_x to maintain approximate layout
+                const sorted = [...widgetsList].sort((a,b) => {
+                    if (a.pos_y === b.pos_y) return (a.pos_x || 0) - (b.pos_x || 0);
+                    return (a.pos_y || 0) - (b.pos_y || 0);
+                });
+
+                sorted.forEach(widget => {
+                    renderWidget(widget);
+                });
+            }
+
+            // ===== Render a single widget card =====
+            function renderWidget(widget) {
+                const card = document.createElement('div');
+                card.className = 'widget-view-card';
+                card.dataset.widgetId = widget.id;   // use DB id as unique key
+
+                const w = widget.width || 4;
+                const h = widget.height || 3;
+                card.style.gridColumn = `span ${w}`;
+                card.style.minHeight = `${h * 80 + 40}px`;  // approximate
+
+                const settings = widget.settings || {};
+                const title = settings.title || widget.widget_type.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+                const color = settings.color || '#4F46E5';
+
+                const contentId = `widget-content-${widget.id}`;
+                card.innerHTML = `
+                    <div class="widget-view-header">
+                        <span>${title}</span>
+                    </div>
+                    <div class="widget-view-content" id="${contentId}"></div>
+                `;
+                widgetsContainer.appendChild(card);
+
+                // render the inner content based on type
+                renderWidgetContent(widget, contentId, color, settings);
+            }
+
+            // ===== Fill widget content with real data =====
+            function renderWidgetContent(widget, containerId, color, settings) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const type = widget.widget_type;
+                const rgb = hexToRgb(color);
+                const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
+                const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+
+                // ---------- aggregation helpers (copied from configure-dashboard) ----------
+                const aggregateData = (data, xField, yField, aggregation) => {
+                    const groups = {};
+                    data.forEach(item => {
+                        // Build key based on xField
+                        let key;
+                        if (xField === 'customer') {
+                            // Combine first_name and last_name
+                            key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
+                        } else if (xField === 'month') {
+                            const date = new Date(item.created_at);
+                            key = date.toLocaleString('default', { month: 'short' });
+                        } else {
+                            key = item[xField] || 'Unknown';
+                        }
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(item);
+                    });
+
+                    const labels = Object.keys(groups);
+                    let values = labels.map(key => {
+                        const group = groups[key];
+                        if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                        if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                        if (aggregation === 'count') return group.length;
+                        if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
+                        if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
+                        return 0;
+                    });
+                    return { labels, values };
+                };
+
+                const getTimeSeriesData = (data, yField, aggregation) => {
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const groups = {};
+                    data.forEach(item => {
+                        const date = new Date(item.created_at);
+                        const month = months[date.getMonth()];
+                        if (!groups[month]) groups[month] = [];
+                        groups[month].push(item);
+                    });
+
+                    const labels = months.filter(m => groups[m] && groups[m].length > 0);
+                    let values = labels.map(month => {
+                        const group = groups[month];
+                        if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                        if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                        if (aggregation === 'count') return group.length;
+                        if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
+                        if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
+                        return 0;
+                    });
+                    return { labels, values };
+                };
+
+                // ---------- render by type ----------
+                if (type === 'bar_chart' || type === 'line_chart' || type === 'area_chart' || type === 'scatter_plot' || type === 'pie_chart') {
+                    const canvas = document.createElement('canvas');
+                    container.appendChild(canvas);
+
+                    let chartConfig = null;
+                    const xField = settings.xAxis || 'product';
+                    const yField = settings.yAxis || 'total_amount';
+                    const agg = settings.aggregation || 'sum';
+
+                    if (type === 'bar_chart') {
+                        const { labels, values } = aggregateData(ordersData, xField, yField, agg);
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    backgroundColor: chartBgColor,
+                                    borderColor: chartColor,
+                                    borderWidth: 2,
+                                    borderRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'line_chart') {
+                        const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    borderColor: chartColor,
+                                    backgroundColor: chartBgColor,
+                                    tension: 0.4,
+                                    fill: false,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: chartColor
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'area_chart') {
+                        const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: `${agg} of ${yField}`,
+                                    data: values,
+                                    borderColor: chartColor,
+                                    backgroundColor: chartBgColor,
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
+                            }
+                        };
+                    } else if (type === 'scatter_plot') {
+                        const scatterData = ordersData.map(order => ({
+                            x: order.quantity || 0,
+                            y: order.unit_price || 0
+                        }));
+                        chartConfig = {
+                            type: 'scatter',
+                            data: {
+                                datasets: [{
+                                    label: 'Quantity vs Price',
+                                    data: scatterData,
+                                    backgroundColor: chartColor,
+                                    pointRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { title: { display: true, text: 'Quantity' } },
+                                    y: { title: { display: true, text: 'Price ($)' } }
+                                }
+                            }
+                        };
+                    } else if (type === 'pie_chart') {
+                        const statusGroups = {};
+                        ordersData.forEach(order => {
+                            const status = order.status || 'Unknown';
+                            statusGroups[status] = (statusGroups[status] || 0) + 1;
+                        });
+                        chartConfig = {
+                            type: 'doughnut',
+                            data: {
+                                labels: Object.keys(statusGroups),
+                                datasets: [{
+                                    data: Object.values(statusGroups),
+                                    backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } },
+                                cutout: '60%'
+                            }
+                        };
+                    }
+
+                    if (chartConfig) {
+                        chartInstances[widget.id] = new Chart(canvas, chartConfig);
+                    }
+                }
+                else if (type === 'data_table') {
+                    const tableId = `table-${widget.id}`;
+                    container.innerHTML = `<table id="${tableId}" class="display" style="width:100%"></table>`;
+
+                    // Define columns with proper rendering for customer name
+                    const columns = [
+                        {
+                            title: 'Customer',
+                            render: (data, type, row) => {
+                                const fullName = `${row.first_name || ''} ${row.last_name || ''}`.trim();
+                                return fullName || 'N/A';
+                            }
+                        },
+                        { title: 'Product', data: 'product' },
+                        { title: 'Qty', data: 'quantity' },
+                        {
+                            title: 'Total',
+                            data: 'total_amount',
+                            render: (data) => `$${parseFloat(data || 0).toFixed(2)}`
+                        },
+                        { title: 'Status', data: 'status' }
+                    ];
+
+                    // jQuery DataTable
+                    const $table = $(`#${tableId}`);
+                    tableInstances[widget.id] = $table.DataTable({
+                        data: ordersData,
+                        columns: columns,
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 25],
+                        order: [[3, 'desc']], // order by Total column (index 3)
+                        language: { search: '', searchPlaceholder: 'Search...' }
+                    });
+                }
+                else if (type.startsWith('kpi_')) {
+                    // compute KPI from ordersData
+                    let value = '', trend = '+12.5%';  // placeholder trend
+                    if (type === 'kpi_revenue') {
+                        const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+                        value = `$${total.toLocaleString()}`;
+                    } else if (type === 'kpi_orders') {
+                        value = ordersData.length.toLocaleString();
+                    } else if (type === 'kpi_average') {
+                        const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+                        const avg = ordersData.length ? total / ordersData.length : 0;
+                        value = `$${avg.toFixed(2)}`;
+                    } else if (type === 'kpi_pending') {
+                        const pending = ordersData.filter(o => o.status === 'Pending').length;
+                        value = pending.toLocaleString();
+                    }
+
+                    const label = settings.title || type.replace('kpi_','').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+                    container.innerHTML = `
+                        <div class="kpi-widget-container">
+                            <div class="kpi-value" style="color: ${color}">${value}</div>
+                            <div class="kpi-label">${label}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // ===== Update metric cards (top 3) based on ordersData =====
+            function updateMetricCards() {
+                const totalCustomers = ordersData.length;
+                const totalRevenue = ordersData.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0);
+                const pendingOrders = ordersData.filter(order => order.status === 'Pending').length;
 
                 totalCustomersEl.textContent = totalCustomers;
                 totalRevenueEl.textContent = totalRevenue >= 1000 ? `$${(totalRevenue / 1000).toFixed(1)}k` : `$${totalRevenue.toFixed(2)}`;
                 pendingOrdersEl.textContent = pendingOrders;
             }
 
-            dateFilter.addEventListener('change', (e) => loadDashboardMetrics(e.target.value));
-
-            // ===== WIDGET RENDERING (static sample data – no user data) =====
-            function loadDashboardWidgets() {
-                const saved = localStorage.getItem("dashboardConfig");
-                if (!saved) return;
-
-                const config = JSON.parse(saved);
-                const container = document.getElementById("dashboardWidgets");
-                container.innerHTML = ""; // Clear existing
-
-                if (!config.widgets || config.widgets.length === 0) return;
-
-                config.widgets.forEach(widget => {
-                    renderWidget(widget, container);
-                });
+            // ===== Refresh all data (called on date change) =====
+            async function refreshDashboard(dateRange) {
+                await fetchOrders(dateRange);
+                updateMetricCards();
+                renderAllWidgets();   // re-renders with new ordersData
             }
 
-            function renderWidget(widget, container) {
-                const card = document.createElement("div");
-                card.className = "widget-view-card";
-                
-                // Apply grid dimensions (desktop)
-                const w = widget.w || 4;
-                const h = widget.h || 3;
-                
-                card.style.gridColumn = `span ${w}`;
-                card.style.minHeight = `${h * 80 + 40}px`;
-
-                const widgetId = "widget_" + Math.random().toString(36).substring(7);
-                const title = widget.settings?.title || widget.type;
-                const color = widget.settings?.color || '#4F46E5';
-
-                card.innerHTML = `
-                    <div class="widget-view-header">
-                        <span>${title}</span>
-                    </div>
-                    <div class="widget-view-content" id="${widgetId}"></div>
-                `;
-                
-                container.appendChild(card);
-                
-                // Render content after append
-                renderWidgetContent(widget.type, widgetId, color);
-            }
-
-            function renderWidgetContent(type, containerId, color) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-
-                // Helper for RGB conversion for charts
-                const hexToRgb = (hex) => {
-                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                    return result ? {
-                        r: parseInt(result[1], 16),
-                        g: parseInt(result[2], 16),
-                        b: parseInt(result[3], 16)
-                    } : { r: 79, g: 70, b: 229 };
-                };
-
-                const rgb = hexToRgb(color);
-                const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
-                const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-
-                if (type === "bar_chart") {
-                    const canvas = document.createElement("canvas");
-                    container.appendChild(canvas);
-                    new Chart(canvas, {
-                        type: "bar",
-                        data: {
-                            labels: sampleData.products,
-                            datasets: [{
-                                label: "Sales",
-                                data: sampleData.sales,
-                                backgroundColor: chartBgColor,
-                                borderColor: chartColor,
-                                borderWidth: 2,
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } }
-                        }
-                    });
-                } 
-                else if (type === "line_chart") {
-                    const canvas = document.createElement("canvas");
-                    container.appendChild(canvas);
-                    new Chart(canvas, {
-                        type: "line",
-                        data: {
-                            labels: sampleData.months,
-                            datasets: [{
-                                label: "Orders",
-                                data: sampleData.orders,
-                                borderColor: chartColor,
-                                backgroundColor: chartBgColor,
-                                tension: 0.4,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } }
-                        }
-                    });
-                } 
-                else if (type === "pie_chart") {
-                    const canvas = document.createElement("canvas");
-                    container.appendChild(canvas);
-                    new Chart(canvas, {
-                        type: "doughnut",
-                        data: {
-                            labels: ['Completed', 'Pending', 'Processing', 'Cancelled'],
-                            datasets: [{
-                                data: [
-                                    sampleData.orderStatus.completed, 
-                                    sampleData.orderStatus.pending, 
-                                    sampleData.orderStatus.processing, 
-                                    sampleData.orderStatus.cancelled
-                                ],
-                                backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%'
-                        }
-                    });
-                } 
-                else if (type === "data_table") {
-                    container.innerHTML = `
-                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                            <thead>
-                                <tr style="background:#f3f4f6; text-align:left;">
-                                    <th style="padding:8px; border-bottom:1px solid #e5e7eb;">Customer</th>
-                                    <th style="padding:8px; border-bottom:1px solid #e5e7eb;">Product</th>
-                                    <th style="padding:8px; border-bottom:1px solid #e5e7eb;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td style="padding:8px; border-bottom:1px solid #f3f4f6;">John Smith</td><td>Laptop Pro</td><td><span style="color:#059669; font-weight:600;">Completed</span></td></tr>
-                                <tr><td style="padding:8px; border-bottom:1px solid #f3f4f6;">Sarah J.</td><td>Wireless Mouse</td><td><span style="color:#D97706; font-weight:600;">Pending</span></td></tr>
-                                <tr><td style="padding:8px; border-bottom:1px solid #f3f4f6;">Mike B.</td><td>Monitor 27"</td><td><span style="color:#2563EB; font-weight:600;">Processing</span></td></tr>
-                            </tbody>
-                        </table>
-                    `;
-                } 
-                else if (type.startsWith("kpi")) {
-                    // KPI widgets also use static values – replace with real data if needed
-                    let value = '';
-                    if (type.includes('revenue')) value = '$42.5k';
-                    else if (type.includes('orders')) value = '128';
-                    else if (type.includes('average')) value = '$332';
-                    else value = '18';
-                    
-                    const label = type.includes('revenue') ? 'Total Revenue' : 
-                                  type.includes('orders') ? 'Total Orders' : 
-                                  type.includes('average') ? 'Avg Order Value' : 'Pending Orders';
-
-                    container.innerHTML = `
-                        <div class="kpi-view-value" style="color: ${color}">${value}</div>
-                        <div class="kpi-view-label">${label}</div>
-                        <div class="kpi-view-trend up">
-                            <svg style="width:12px;height:12px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                            +12.5% this month
-                        </div>
-                    `;
-                }
-            }
-
-            // ===== EVENT LISTENERS =====
-            configureBtn.addEventListener('click', () => {
-                window.location.href = 'configure-dashboard.html';
+            // ===== Event: date filter change =====
+            dateFilter.addEventListener('change', (e) => {
+                refreshDashboard(e.target.value);
             });
 
+            // ===== Sidebar mobile toggle =====
             function openSidebar() {
                 sidebar.classList.add('open');
                 backdrop.classList.add('active');
@@ -768,11 +1146,26 @@
                 if (window.innerWidth > 768) closeSidebar();
             });
 
-            // ===== INIT =====
-            checkUser().then(() => {
-                loadDashboardMetrics('all');
-                loadDashboardWidgets();
+            // ===== Configure button =====
+            configureBtn.addEventListener('click', () => {
+                window.location.href = 'configure-dashboard.html';
             });
+
+            // ===== INIT =====
+            (async function init() {
+                await checkUser();
+                if (!currentUser) return;
+
+                // initial data fetch (all time)
+                await fetchOrders('all');
+                updateMetricCards();
+
+                // load saved widget configuration from Supabase
+                await loadUserConfig();
+
+                // render all widgets
+                renderAllWidgets();
+            })();
         })();
     </script>
 </body>

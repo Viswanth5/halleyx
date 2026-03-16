@@ -144,6 +144,12 @@
             box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .error, .success {
             margin-top: 16px;
             padding: 10px 14px;
@@ -151,7 +157,7 @@
             font-size: 0.85rem;
             text-align: center;
             font-weight: 500;
-            display: none; /* Will be set to block by JS */
+            display: none; /* Will be set by JS */
         }
 
         .error {
@@ -252,28 +258,40 @@
         var signupContainer = document.getElementById('signupContainer');
         var loginContainer = document.getElementById('loginContainer');
 
-        // Helper to show messages
+        // Improved showMessage – hides the div if text is empty
         function showMessage(containerId, text, isSuccess) {
             var msgDiv = document.getElementById(containerId);
+            if (!text) {
+                msgDiv.style.display = 'none';
+                return;
+            }
             msgDiv.textContent = text;
             msgDiv.className = isSuccess ? 'success' : 'error';
-            // Ensure the message is visible
-            msgDiv.style.display = 'block'; 
+            msgDiv.style.display = 'block';
         }
+
+        // Prevent multiple signup clicks
+        let isSigningUp = false;
 
         // Signup
         document.getElementById('signupBtn').addEventListener('click', async function() {
+            if (isSigningUp) return;
+            isSigningUp = true;
+
             console.log('Signup button clicked');
             var name = document.getElementById('signupName').value.trim();
             var email = document.getElementById('signupEmail').value.trim();
             var password = document.getElementById('signupPassword').value;
 
+            // Clear previous message
+            showMessage('signupMessage', '', false);
+
             if (!name || !email || !password) {
                 showMessage('signupMessage', 'Please fill all fields.', false);
+                isSigningUp = false;
                 return;
             }
 
-            showMessage('signupMessage', '', false);
             try {
                 var { data, error } = await supabase.auth.signUp({
                     email: email,
@@ -296,21 +314,35 @@
             } catch (err) {
                 console.error('Unexpected error:', err);
                 showMessage('signupMessage', 'An error occurred. Check console.', false);
+            } finally {
+                isSigningUp = false;
             }
         });
 
+        // Prevent multiple login clicks
+        let isLoggingIn = false;
+
         // Login
         document.getElementById('loginBtn').addEventListener('click', async function() {
+            if (isLoggingIn) return;
+            isLoggingIn = true;
+
             console.log('Login button clicked');
             var email = document.getElementById('loginEmail').value.trim();
             var password = document.getElementById('loginPassword').value;
 
+            // Clear previous message
+            showMessage('loginMessage', '', false);
+
             if (!email || !password) {
                 showMessage('loginMessage', 'Please fill all fields.', false);
+                isLoggingIn = false;
                 return;
             }
 
-            showMessage('loginMessage', '', false);
+            // Optional: log the credentials for debugging (remove in production)
+            console.log('Attempting login with:', { email, password });
+
             try {
                 var { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -319,14 +351,16 @@
                 if (error) {
                     console.error('Login error:', error);
                     showMessage('loginMessage', error.message, false);
+                    isLoggingIn = false;
                 } else {
                     console.log('Login success:', data);
-                    // Redirect to dashboard.html
+                    // Redirect to dashboard.html – page will unload, no need to reset flag
                     window.location.href = 'dashboard.html';
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);
                 showMessage('loginMessage', 'An error occurred. Check console.', false);
+                isLoggingIn = false;
             }
         });
 
@@ -359,12 +393,8 @@
         };
 
         function clearMessages() {
-            var signupMsg = document.getElementById('signupMessage');
-            var loginMsg = document.getElementById('loginMessage');
-            signupMsg.textContent = '';
-            signupMsg.style.display = 'none';
-            loginMsg.textContent = '';
-            loginMsg.style.display = 'none';
+            showMessage('signupMessage', '', false);
+            showMessage('loginMessage', '', false);
         }
     </script>
 </body>
