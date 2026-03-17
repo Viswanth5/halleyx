@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Configuration · Halleyx</title>
-    <!-- Supabase JS (added early for global availability) -->
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Export libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <!-- Custom export script -->
+    <script src="export-dashboard.js"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,6 +66,9 @@
     </script>
     
     <style>
+        .hidden {
+            display: none;
+        }
         :root {
             --bg: #F5F7FB;
             --fg: #1F2937;
@@ -605,9 +615,10 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header (properly structured) -->
     <header class="header">
         <div class="flex items-center justify-between px-4 md:px-6 h-16">
+            <!-- Left side: mobile menu + title -->
             <div class="flex items-center gap-3">
                 <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -616,13 +627,39 @@
                 </button>
                 <h1 class="text-lg md:text-xl font-bold text-gray-900">Configure Dashboard</h1>
             </div>
+            <!-- Right side: buttons -->
             <div class="flex items-center gap-3">
+                <!-- Export Dropdown Button -->
+                <div class="relative">
+                    <button id="exportDropdownBtn" onclick="toggleExportDropdown()" class="btn btn-secondary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span class="hidden sm:inline">Export</span>
+                    </button>
+                    <div id="exportDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                        <button onclick="exportDashboardAsPDF()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            PDF Report
+                        </button>
+                        <button onclick="exportDashboardAsExcel()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Excel Data
+                        </button>
+                    </div>
+                </div>
+                <!-- Back to Dashboard button -->
                 <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     <span class="hidden sm:inline">Back to Dashboard</span>
                 </button>
+                <!-- Save Configuration button -->
                 <button class="btn btn-primary" onclick="saveConfiguration()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
@@ -897,801 +934,798 @@
         <span id="toastMessage">Configuration saved successfully!</span>
     </div>
 
-   <script>
-    // ==================== SUPABASE INIT ====================
-    const SUPABASE_URL = 'https://icwvcbzhrxrrknxzmtbk.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imljd3ZjYnpocnhycmtueHptdGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTM2NzksImV4cCI6MjA4OTA2OTY3OX0.dMOgiB5afMkJvJpwrCI9elyBb5THqbTuqJaq6jLsbPs';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
+        // ==================== SUPABASE INIT ====================
+        const SUPABASE_URL = 'https://icwvcbzhrxrrknxzmtbk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imljd3ZjYnpocnhycmtueHptdGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTM2NzksImV4cCI6MjA4OTA2OTY3OX0.dMOgiB5afMkJvJpwrCI9elyBb5THqbTuqJaq6jLsbPs';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ==================== GLOBAL VARIABLES ====================
-    let grid = null;
-    let widgetCounter = 0;
-    let currentWidgetId = null;
-    let widgetToDelete = null;
-    let currentUserId = null;               // store logged‑in user ID
-    const chartInstances = {};
-    const tableInstances = {};
-    const widgetSettings = {};
-    let ordersData = [];                     // will hold only current user's orders
+        // ==================== GLOBAL VARIABLES ====================
+        let grid = null;
+        let widgetCounter = 0;
+        let currentWidgetId = null;
+        let widgetToDelete = null;
+        let currentUserId = null;               // store logged‑in user ID
+        const chartInstances = {};
+        const tableInstances = {};
+        const widgetSettings = {};
+        let ordersData = [];                     // will hold only current user's orders
 
-    // ==================== AUTHENTICATION ====================
-    async function checkAuth() {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
-        if (error || !user) {
-            window.location.href = 'index.html';
-            return;
-        }
-        currentUserId = user.id;
-    }
+        // Expose ordersData globally for export script
+        window.ordersData = ordersData;
 
-    // ==================== FETCH USER‑ONLY ORDERS ====================
-    async function fetchOrders() {
-        if (!currentUserId) return [];
-        const { data, error } = await supabaseClient
-            .from('customer_orders')
-            .select('*')
-            .eq('user_id', currentUserId);          // critical filter
-        if (error) {
-            console.error('Error fetching orders:', error);
-            showToast('Failed to load data from Supabase');
-            return [];
-        }
-        ordersData = data || [];
-        return ordersData;
-    }
-
-    // ==================== WIDGET CONFIGURATIONS ====================
-    const widgetConfigs = {
-        bar_chart: {
-            title: 'Sales by Product',
-            defaultW: 5,
-            defaultH: 4,
-            hasAxes: true
-        },
-        line_chart: {
-            title: 'Orders Over Time',
-            defaultW: 6,
-            defaultH: 4,
-            hasAxes: true
-        },
-        pie_chart: {
-            title: 'Orders by Status',
-            defaultW: 4,
-            defaultH: 4,
-            hasAxes: false
-        },
-        area_chart: {
-            title: 'Revenue Growth',
-            defaultW: 6,
-            defaultH: 4,
-            hasAxes: true
-        },
-        scatter_plot: {
-            title: 'Price vs Quantity',
-            defaultW: 5,
-            defaultH: 4,
-            hasAxes: true
-        },
-        data_table: {
-            title: 'Order Details',
-            defaultW: 8,
-            defaultH: 5,
-            hasAxes: false
-        },
-        kpi_revenue: {
-            title: 'Total Revenue',
-            defaultW: 3,
-            defaultH: 2,
-            hasAxes: false,
-            compute: (data) => {
-                const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-                return { value: `$${total.toLocaleString()}`, trend: '+12.5%' };
+        // ==================== AUTHENTICATION ====================
+        async function checkAuth() {
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
+            if (error || !user) {
+                window.location.href = 'index.html';
+                return;
             }
-        },
-        kpi_orders: {
-            title: 'Total Orders',
-            defaultW: 3,
-            defaultH: 2,
-            hasAxes: false,
-            compute: (data) => ({ value: data.length.toLocaleString(), trend: '+8.2%' })
-        },
-        kpi_average: {
-            title: 'Average Order Value',
-            defaultW: 3,
-            defaultH: 2,
-            hasAxes: false,
-            compute: (data) => {
-                const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-                const avg = data.length ? total / data.length : 0;
-                return { value: `$${avg.toFixed(2)}`, trend: '+3.8%' };
-            }
-        },
-        kpi_pending: {
-            title: 'Pending Orders',
-            defaultW: 3,
-            defaultH: 2,
-            hasAxes: false,
-            compute: (data) => {
-                const pending = data.filter(o => o.status === 'Pending').length;
-                return { value: pending.toLocaleString(), trend: '-5.1%' };
-            }
+            currentUserId = user.id;
         }
-    };
 
-    // ==================== GRID INIT ====================
-    function initGrid() {
-        const gridElement = document.getElementById('dashboardGrid');
-        if (!gridElement) return;
+        // ==================== FETCH USER‑ONLY ORDERS ====================
+        async function fetchOrders() {
+            if (!currentUserId) return [];
+            const { data, error } = await supabaseClient
+                .from('customer_orders')
+                .select('*')
+                .eq('user_id', currentUserId);          // critical filter
+            if (error) {
+                console.error('Error fetching orders:', error);
+                showToast('Failed to load data from Supabase');
+                return [];
+            }
+            ordersData = data || [];
+            window.ordersData = ordersData;              // update global copy
+            return ordersData;
+        }
 
-        grid = GridStack.init({
-            column: 12,
-            cellHeight: 80,
-            margin: 12,
-            animate: true,
-            float: false,
-            draggable: {
-                handle: '.widget-header'
+        // ==================== WIDGET CONFIGURATIONS ====================
+        const widgetConfigs = {
+            bar_chart: {
+                title: 'Sales by Product',
+                defaultW: 5,
+                defaultH: 4,
+                hasAxes: true
             },
-            resizable: {
-                handles: 'se'
+            line_chart: {
+                title: 'Orders Over Time',
+                defaultW: 6,
+                defaultH: 4,
+                hasAxes: true
             },
-            responsive: true,
-            breakpoints: [
-                { w: 1024, c: 8 },
-                { w: 768, c: 4 }
-            ]
-        }, gridElement);
+            pie_chart: {
+                title: 'Orders by Status',
+                defaultW: 4,
+                defaultH: 4,
+                hasAxes: false
+            },
+            area_chart: {
+                title: 'Revenue Growth',
+                defaultW: 6,
+                defaultH: 4,
+                hasAxes: true
+            },
+            scatter_plot: {
+                title: 'Price vs Quantity',
+                defaultW: 5,
+                defaultH: 4,
+                hasAxes: true
+            },
+            data_table: {
+                title: 'Order Details',
+                defaultW: 8,
+                defaultH: 5,
+                hasAxes: false
+            },
+            kpi_revenue: {
+                title: 'Total Revenue',
+                defaultW: 3,
+                defaultH: 2,
+                hasAxes: false,
+                compute: (data) => {
+                    const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+                    return { value: `$${total.toLocaleString()}`, trend: '+12.5%' };
+                }
+            },
+            kpi_orders: {
+                title: 'Total Orders',
+                defaultW: 3,
+                defaultH: 2,
+                hasAxes: false,
+                compute: (data) => ({ value: data.length.toLocaleString(), trend: '+8.2%' })
+            },
+            kpi_average: {
+                title: 'Average Order Value',
+                defaultW: 3,
+                defaultH: 2,
+                hasAxes: false,
+                compute: (data) => {
+                    const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+                    const avg = data.length ? total / data.length : 0;
+                    return { value: `$${avg.toFixed(2)}`, trend: '+3.8%' };
+                }
+            },
+            kpi_pending: {
+                title: 'Pending Orders',
+                defaultW: 3,
+                defaultH: 2,
+                hasAxes: false,
+                compute: (data) => {
+                    const pending = data.filter(o => o.status === 'Pending').length;
+                    return { value: pending.toLocaleString(), trend: '-5.1%' };
+                }
+            }
+        };
 
-        grid.on('change', updateEmptyState);
-        grid.on('removed', updateEmptyState);
-        grid.on('added', updateEmptyState);
-    }
+        // ==================== GRID INIT ====================
+        function initGrid() {
+            const gridElement = document.getElementById('dashboardGrid');
+            if (!gridElement) return;
 
-    function updateEmptyState() {
-        const emptyState = document.getElementById('emptyState');
-        if (!emptyState) return;
-        const hasWidgets = grid && grid.engine.nodes.length > 0;
-        emptyState.style.display = hasWidgets ? 'none' : 'block';
-    }
+            grid = GridStack.init({
+                column: 12,
+                cellHeight: 80,
+                margin: 12,
+                animate: true,
+                float: false,
+                draggable: {
+                    handle: '.widget-header'
+                },
+                resizable: {
+                    handles: 'se'
+                },
+                responsive: true,
+                breakpoints: [
+                    { w: 1024, c: 8 },
+                    { w: 768, c: 4 }
+                ]
+            }, gridElement);
 
-    // ==================== DATA AGGREGATION HELPERS ====================
-    function aggregateData(data, xField, yField, aggregation) {
-        const groups = {};
-        data.forEach(item => {
-            let key;
-            if (xField === 'customer') {
-                // Combine first_name and last_name
-                key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
-            } else if (xField === 'month') {
+            grid.on('change', updateEmptyState);
+            grid.on('removed', updateEmptyState);
+            grid.on('added', updateEmptyState);
+        }
+
+        function updateEmptyState() {
+            const emptyState = document.getElementById('emptyState');
+            if (!emptyState) return;
+            const hasWidgets = grid && grid.engine.nodes.length > 0;
+            emptyState.style.display = hasWidgets ? 'none' : 'block';
+        }
+
+        // ==================== DATA AGGREGATION HELPERS ====================
+        function aggregateData(data, xField, yField, aggregation) {
+            const groups = {};
+            data.forEach(item => {
+                let key;
+                if (xField === 'customer') {
+                    // Combine first_name and last_name
+                    key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
+                } else if (xField === 'month') {
+                    const date = new Date(item.created_at);
+                    key = date.toLocaleString('default', { month: 'short' });
+                } else {
+                    key = item[xField] || 'Unknown';
+                }
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(item);
+            });
+
+            const labels = Object.keys(groups);
+            let values = labels.map(key => {
+                const group = groups[key];
+                let val;
+                if (aggregation === 'sum') {
+                    val = group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                } else if (aggregation === 'avg') {
+                    val = group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                } else if (aggregation === 'count') {
+                    val = group.length;
+                } else if (aggregation === 'max') {
+                    val = Math.max(...group.map(g => g[yField] || 0));
+                } else if (aggregation === 'min') {
+                    val = Math.min(...group.map(g => g[yField] || 0));
+                }
+                return val;
+            });
+            return { labels, values };
+        }
+
+        function getTimeSeriesData(data, yField, aggregation) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const groups = {};
+            data.forEach(item => {
                 const date = new Date(item.created_at);
-                key = date.toLocaleString('default', { month: 'short' });
-            } else {
-                key = item[xField] || 'Unknown';
-            }
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(item);
-        });
-
-        const labels = Object.keys(groups);
-        let values = labels.map(key => {
-            const group = groups[key];
-            let val;
-            if (aggregation === 'sum') {
-                val = group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
-            } else if (aggregation === 'avg') {
-                val = group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
-            } else if (aggregation === 'count') {
-                val = group.length;
-            } else if (aggregation === 'max') {
-                val = Math.max(...group.map(g => g[yField] || 0));
-            } else if (aggregation === 'min') {
-                val = Math.min(...group.map(g => g[yField] || 0));
-            }
-            return val;
-        });
-        return { labels, values };
-    }
-
-    function getTimeSeriesData(data, yField, aggregation) {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const groups = {};
-        data.forEach(item => {
-            const date = new Date(item.created_at);
-            const month = months[date.getMonth()];
-            if (!groups[month]) groups[month] = [];
-            groups[month].push(item);
-        });
-
-        const labels = months.filter(m => groups[m] && groups[m].length > 0);
-        let values = labels.map(month => {
-            const group = groups[month];
-            if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
-            if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
-            if (aggregation === 'count') return group.length;
-            if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
-            if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
-        });
-        return { labels, values };
-    }
-
-    // ==================== WIDGET CREATION ====================
-    function createWidgetContent(type, widgetId, settings) {
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'widget-content';
-        contentDiv.id = `content-${widgetId}`;
-        
-        const config = widgetConfigs[type];
-        if (!config) return contentDiv;
-
-        if (type.startsWith('kpi_')) {
-            const comp = config.compute(ordersData);
-            contentDiv.innerHTML = createKPIContent(comp.value, config.title, comp.trend, '#4F46E5');
-        } else if (type === 'data_table') {
-            contentDiv.innerHTML = '<table class="w-full" id="table-' + widgetId + '"></table>';
-            setTimeout(() => initDataTable(widgetId), 100);
-        } else {
-            contentDiv.innerHTML = '<canvas id="chart-' + widgetId + '"></canvas>';
-            setTimeout(() => initChart(type, widgetId, settings), 100);
-        }
-
-        return contentDiv;
-    }
-
-    function createKPIContent(value, label, trend, color) {
-        const trendUp = trend.includes('+');
-        const trendClass = trendUp ? 'up' : 'down';
-        const trendIcon = trendUp
-            ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
-            : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
-        return `
-            <div class="kpi-card">
-                <div class="kpi-value" style="color: ${color}">${value}</div>
-                <div class="kpi-label">${label}</div>
-                <div class="kpi-trend ${trendClass}">
-                    ${trendIcon}
-                    ${trend} this month
-                </div>
-            </div>
-        `;
-    }
-
-    async function initChart(type, widgetId, settings) {
-        const canvas = document.getElementById(`chart-${widgetId}`);
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        if (chartInstances[widgetId]) chartInstances[widgetId].destroy();
-
-        const color = settings?.color || '#4F46E5';
-        const rgb = hexToRgb(color);
-        const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
-        const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-
-        let xField = settings?.xAxis || 'product';
-        let yField = settings?.yAxis || 'total_amount';
-        let aggregation = settings?.aggregation || 'sum';
-
-        let chartConfig = null;
-
-        if (type === 'bar_chart') {
-            const { labels, values } = aggregateData(ordersData, xField, yField, aggregation);
-            chartConfig = {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `${aggregation} of ${yField}`,
-                        data: values,
-                        backgroundColor: chartBgColor,
-                        borderColor: chartColor,
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: getChartOptions(yField)
-            };
-        } else if (type === 'line_chart') {
-            const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
-            chartConfig = {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `${aggregation} of ${yField}`,
-                        data: values,
-                        borderColor: chartColor,
-                        backgroundColor: chartBgColor,
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: false,
-                        pointRadius: 4,
-                        pointBackgroundColor: chartColor
-                    }]
-                },
-                options: getChartOptions(yField)
-            };
-        } else if (type === 'pie_chart') {
-            const statusGroups = {};
-            ordersData.forEach(order => {
-                const status = order.status || 'Unknown';
-                statusGroups[status] = (statusGroups[status] || 0) + 1;
+                const month = months[date.getMonth()];
+                if (!groups[month]) groups[month] = [];
+                groups[month].push(item);
             });
-            chartConfig = {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(statusGroups),
-                    datasets: [{
-                        data: Object.values(statusGroups),
-                        backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { usePointStyle: true, font: { size: 11 } } }
-                    },
-                    cutout: '60%'
-                }
-            };
-        } else if (type === 'area_chart') {
-            const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
-            chartConfig = {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `${aggregation} of ${yField}`,
-                        data: values,
-                        borderColor: chartColor,
-                        backgroundColor: chartBgColor,
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 0
-                    }]
-                },
-                options: getChartOptions(yField)
-            };
-        } else if (type === 'scatter_plot') {
-            const scatterData = ordersData.map(order => ({
-                x: order.quantity || 0,
-                y: order.unit_price || 0
-            }));
-            chartConfig = {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Quantity vs Price',
-                        data: scatterData,
-                        backgroundColor: chartColor,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { title: { display: true, text: 'Quantity' }, grid: { color: 'rgba(0,0,0,0.05)' } },
-                        y: { title: { display: true, text: 'Price ($)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
-                    }
-                }
-            };
+
+            const labels = months.filter(m => groups[m] && groups[m].length > 0);
+            let values = labels.map(month => {
+                const group = groups[month];
+                if (aggregation === 'sum') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0);
+                if (aggregation === 'avg') return group.reduce((acc, cur) => acc + (cur[yField] || 0), 0) / group.length;
+                if (aggregation === 'count') return group.length;
+                if (aggregation === 'max') return Math.max(...group.map(g => g[yField] || 0));
+                if (aggregation === 'min') return Math.min(...group.map(g => g[yField] || 0));
+                return 0;
+            });
+            return { labels, values };
         }
 
-        if (chartConfig) {
-            chartInstances[widgetId] = new Chart(ctx, chartConfig);
-        }
-    }
+        // ==================== WIDGET CREATION ====================
+        function createWidgetContent(type, widgetId, settings) {
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'widget-content';
+            contentDiv.id = `content-${widgetId}`;
+            
+            const config = widgetConfigs[type];
+            if (!config) return contentDiv;
 
-    function getChartOptions(yLabel) {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                y: { title: { display: true, text: yLabel, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }
-            }
-        };
-    }
-
-    function initDataTable(widgetId) {
-        const table = document.getElementById(`table-${widgetId}`);
-        if (!table) return;
-        if (tableInstances[widgetId]) tableInstances[widgetId].destroy();
-
-        let tbodyHtml = '';
-        ordersData.forEach(order => {
-            const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A';
-            const statusClass = {
-                'Completed': 'bg-green-100 text-green-700',
-                'Pending': 'bg-yellow-100 text-yellow-700',
-                'Processing': 'bg-blue-100 text-blue-700',
-                'Cancelled': 'bg-red-100 text-red-700'
-            }[order.status] || 'bg-gray-100 text-gray-700';
-
-            tbodyHtml += `
-                <tr>
-                    <td class="font-medium">${fullName}</td>
-                    <td>${order.product || ''}</td>
-                    <td>${order.quantity || 0}</td>
-                    <td>$${(order.total_amount || 0).toFixed(2)}</td>
-                    <td><span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${order.status || ''}</span></td>
-                </tr>
-            `;
-        });
-
-        table.innerHTML = `
-            <thead>
-                <tr><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr>
-            </thead>
-            <tbody>${tbodyHtml}</tbody>
-        `;
-
-        tableInstances[widgetId] = $(table).DataTable({
-            pageLength: 5,
-            lengthMenu: [5, 10, 25],
-            order: [[3, 'desc']],
-            language: { search: '', searchPlaceholder: 'Search...' }
-        });
-    }
-
-    function hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? { r: parseInt(result[1],16), g: parseInt(result[2],16), b: parseInt(result[3],16) } : { r:79, g:70, b:229 };
-    }
-
-    // ==================== ADD WIDGET TO GRID ====================
-    function addWidgetToGrid(type, x, y, settings = {}) {
-        if (!grid) {
-            console.error('Grid not initialized');
-            return;
-        }
-
-        const config = widgetConfigs[type];
-        if (!config) {
-            console.error('Unknown widget type:', type);
-            return;
-        }
-
-        widgetCounter++;
-        const widgetId = `widget-${widgetCounter}`;
-
-        const widgetColor = settings.color || '#4F46E5';
-        const widgetTitle = settings.title || config.title;
-        const widgetWidth = settings.w || config.defaultW;
-        const widgetHeight = settings.h || config.defaultH;
-
-        widgetSettings[widgetId] = {
-            title: widgetTitle,
-            color: widgetColor,
-            xAxis: settings.xAxis || 'product',
-            yAxis: settings.yAxis || 'total_amount',
-            aggregation: settings.aggregation || 'sum'
-        };
-
-        const widgetElement = document.createElement('div');
-        widgetElement.className = 'grid-stack-item';
-        widgetElement.dataset.widgetId = widgetId;
-        widgetElement.dataset.widgetType = type;
-
-        const content = document.createElement('div');
-        content.className = 'grid-stack-item-content';
-
-        const header = document.createElement('div');
-        header.className = 'widget-header';
-        header.innerHTML = `
-            <span class="widget-title">${widgetTitle}</span>
-            <div class="widget-actions">
-                <button class="widget-action-btn settings-btn" onclick="openSettingsPanel('${widgetId}')" title="Settings">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                </button>
-                <button class="widget-action-btn delete" onclick="openDeleteModal('${widgetId}')" title="Delete">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                </button>
-            </div>
-        `;
-
-        content.appendChild(header);
-        content.appendChild(createWidgetContent(type, widgetId, widgetSettings[widgetId]));
-        widgetElement.appendChild(content);
-
-        const gridOptions = { w: widgetWidth, h: widgetHeight, minW: 2, minH: 2 };
-        if (x !== undefined && y !== undefined) {
-            gridOptions.x = x;
-            gridOptions.y = y;
-        }
-        grid.addWidget(widgetElement, gridOptions);
-        updateEmptyState();
-    }
-
-    // ==================== SETTINGS PANEL ====================
-    window.openSettingsPanel = function(widgetId) {
-        currentWidgetId = widgetId;
-        const widget = document.querySelector(`[data-widget-id="${widgetId}"]`);
-        if (!widget) return;
-
-        const type = widget.dataset.widgetType;
-        const config = widgetConfigs[type];
-        const settings = widgetSettings[widgetId] || {};
-
-        document.getElementById('settingTitle').value = settings.title || config.title;
-        document.getElementById('settingColor').value = settings.color || '#4F46E5';
-        document.getElementById('settingWidth').value = widget.getAttribute('gs-w');
-        document.getElementById('settingHeight').value = widget.getAttribute('gs-h');
-
-        if (settings.xAxis) document.getElementById('settingXAxis').value = settings.xAxis;
-        if (settings.yAxis) document.getElementById('settingYAxis').value = settings.yAxis;
-        if (settings.aggregation) document.getElementById('settingAggregation').value = settings.aggregation;
-
-        const showAxes = config.hasAxes;
-        document.getElementById('xAxisGroup').style.display = showAxes ? 'block' : 'none';
-        document.getElementById('yAxisGroup').style.display = showAxes ? 'block' : 'none';
-        document.getElementById('aggregationGroup').style.display = showAxes ? 'block' : 'none';
-
-        document.getElementById('settingsOverlay').classList.add('open');
-        document.getElementById('settingsPanel').classList.add('open');
-    };
-
-    window.closeSettingsPanel = function() {
-        document.getElementById('settingsOverlay').classList.remove('open');
-        document.getElementById('settingsPanel').classList.remove('open');
-        currentWidgetId = null;
-    };
-
-    window.applySettings = function() {
-        if (!currentWidgetId) return;
-        const widget = document.querySelector(`[data-widget-id="${currentWidgetId}"]`);
-        if (!widget) return;
-
-        const newTitle = document.getElementById('settingTitle').value;
-        const newColor = document.getElementById('settingColor').value;
-        const newWidth = parseInt(document.getElementById('settingWidth').value);
-        const newHeight = parseInt(document.getElementById('settingHeight').value);
-        const newXAxis = document.getElementById('settingXAxis').value;
-        const newYAxis = document.getElementById('settingYAxis').value;
-        const newAggregation = document.getElementById('settingAggregation').value;
-
-        widgetSettings[currentWidgetId] = {
-            title: newTitle,
-            color: newColor,
-            xAxis: newXAxis,
-            yAxis: newYAxis,
-            aggregation: newAggregation
-        };
-
-        const titleEl = widget.querySelector('.widget-title');
-        if (titleEl) titleEl.textContent = newTitle;
-
-        if (grid) grid.update(widget, { w: newWidth, h: newHeight });
-
-        const type = widget.dataset.widgetType;
-        if (type && !type.startsWith('kpi_') && type !== 'data_table') {
-            initChart(type, currentWidgetId, widgetSettings[currentWidgetId]);
-        } else if (type && type.startsWith('kpi_')) {
-            const content = widget.querySelector('.widget-content');
-            if (content) {
-                const config = widgetConfigs[type];
+            if (type.startsWith('kpi_')) {
                 const comp = config.compute(ordersData);
-                content.innerHTML = createKPIContent(comp.value, config.title, comp.trend, newColor);
-            }
-        }
-
-        showToast('Settings applied successfully');
-        closeSettingsPanel();
-    };
-
-    // ==================== DELETE MODAL ====================
-    window.openDeleteModal = function(widgetId) {
-        widgetToDelete = widgetId;
-        document.getElementById('deleteModal').classList.add('open');
-    };
-
-    window.closeDeleteModal = function() {
-        document.getElementById('deleteModal').classList.remove('open');
-        widgetToDelete = null;
-    };
-
-    window.confirmDelete = function() {
-        if (!widgetToDelete || !grid) return;
-        const widget = document.querySelector(`[data-widget-id="${widgetToDelete}"]`);
-        if (widget) {
-            if (chartInstances[widgetToDelete]) {
-                chartInstances[widgetToDelete].destroy();
-                delete chartInstances[widgetToDelete];
-            }
-            if (tableInstances[widgetToDelete]) {
-                tableInstances[widgetToDelete].destroy();
-                delete tableInstances[widgetToDelete];
-            }
-            delete widgetSettings[widgetToDelete];
-            grid.removeWidget(widget);
-        }
-        closeDeleteModal();
-        showToast('Widget removed');
-    };
-
-    // ==================== SAVE CONFIGURATION TO SUPABASE (FIXED) ====================
-    window.saveConfiguration = async function() {
-        if (!grid || !currentUserId) {
-            alert('Not authenticated or grid not ready');
-            return;
-        }
-
-        const widgets = grid.engine.nodes.map(node => {
-            const el = node.el;
-            const widgetId = el.dataset.widgetId;
-            const settings = widgetSettings[widgetId] || {};
-            return {
-                widget_type: el.dataset.widgetType,
-                pos_x: node.x,
-                pos_y: node.y,
-                width: node.w,
-                height: node.h,
-                settings: settings
-            };
-        });
-
-        // 1. Insert dashboard config – WITHOUT updated_at (column doesn't exist)
-        const { data: dashboard, error: dashError } = await supabaseClient
-            .from('dashboard_configs')
-            .insert({
-                user_id: currentUserId,
-                name: 'My Dashboard',   // you can make this editable later
-                created_at: new Date()
-                // updated_at removed because your table doesn't have it
-            })
-            .select()
-            .single();
-
-        if (dashError) {
-            console.error(dashError);
-            alert('Error saving dashboard');
-            return;
-        }
-
-        const dashboardId = dashboard.id;
-
-        // 2. Insert all widgets
-        const widgetsToInsert = widgets.map(w => ({
-            dashboard_id: dashboardId,
-            widget_type: w.widget_type,
-            pos_x: w.pos_x,
-            pos_y: w.pos_y,
-            width: w.width,
-            height: w.height,
-            settings: w.settings
-        }));
-
-        const { error: widgetError } = await supabaseClient
-            .from('dashboard_widgets')
-            .insert(widgetsToInsert);
-
-        if (widgetError) {
-            console.error(widgetError);
-            alert('Widget save failed');
-            return;
-        }
-
-        showToast('Dashboard saved successfully');
-    };
-
-    // ==================== LOAD LATEST USER CONFIG FROM SUPABASE ====================
-    async function loadSavedConfig() {
-        if (!currentUserId) return;
-
-        // Get the most recent dashboard for this user
-        const { data: dashboards, error } = await supabaseClient
-            .from('dashboard_configs')
-            .select('id')
-            .eq('user_id', currentUserId)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-        if (error || !dashboards || dashboards.length === 0) return;
-
-        const dashboardId = dashboards[0].id;
-
-        // Fetch all widgets for that dashboard
-        const { data: widgets, error: widgetError } = await supabaseClient
-            .from('dashboard_widgets')
-            .select('*')
-            .eq('dashboard_id', dashboardId);
-
-        if (widgetError || !widgets) return;
-
-        // Recreate each widget on the grid
-        widgets.forEach(w => {
-            // settings is already a JSON object stored in the database
-            const settings = w.settings || {};
-            // Add widget at saved position
-            addWidgetToGrid(w.widget_type, w.pos_x, w.pos_y, {
-                ...settings,
-                w: w.width,
-                h: w.height
-            });
-        });
-    }
-
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toastMessage');
-        if (toast && toastMessage) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-    }
-
-    // ==================== DRAG & DROP SETUP ====================
-    function setupDragAndDrop() {
-        const widgetCards = document.querySelectorAll('.widget-card[draggable="true"]');
-        widgetCards.forEach(card => {
-            card.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData('text/plain', this.dataset.widgetType);
-                this.classList.add('dragging');
-            });
-            card.addEventListener('dragend', function() { this.classList.remove('dragging'); });
-        });
-
-        const gridElement = document.getElementById('dashboardGrid');
-        if (!gridElement) return;
-        gridElement.addEventListener('dragover', e => e.preventDefault());
-        gridElement.addEventListener('drop', e => {
-            e.preventDefault();
-            const type = e.dataTransfer.getData('text/plain');
-            if (type) {
-                addWidgetToGrid(type);
+                contentDiv.innerHTML = createKPIContent(comp.value, config.title, comp.trend, '#4F46E5');
+            } else if (type === 'data_table') {
+                contentDiv.innerHTML = '<table class="w-full" id="table-' + widgetId + '"></table>';
+                setTimeout(() => initDataTable(widgetId), 100);
             } else {
-                console.warn('No widget type in drop event');
+                contentDiv.innerHTML = '<canvas id="chart-' + widgetId + '"></canvas>';
+                setTimeout(() => initChart(type, widgetId, settings), 100);
             }
-        });
-    }
 
-    function setupWidgetSearch() {
-        const searchInput = document.getElementById('widgetSearch');
-        if (!searchInput) return;
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            document.querySelectorAll('.widget-card').forEach(card => {
-                card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+            return contentDiv;
+        }
+
+        function createKPIContent(value, label, trend, color) {
+            const trendUp = trend.includes('+');
+            const trendClass = trendUp ? 'up' : 'down';
+            const trendIcon = trendUp
+                ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
+                : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
+            return `
+                <div class="kpi-card">
+                    <div class="kpi-value" style="color: ${color}">${value}</div>
+                    <div class="kpi-label">${label}</div>
+                    <div class="kpi-trend ${trendClass}">
+                        ${trendIcon}
+                        ${trend} this month
+                    </div>
+                </div>
+            `;
+        }
+
+        async function initChart(type, widgetId, settings) {
+            const canvas = document.getElementById(`chart-${widgetId}`);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            if (chartInstances[widgetId]) chartInstances[widgetId].destroy();
+
+            const color = settings?.color || '#4F46E5';
+            const rgb = hexToRgb(color);
+            const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
+            const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+
+            let xField = settings?.xAxis || 'product';
+            let yField = settings?.yAxis || 'total_amount';
+            let aggregation = settings?.aggregation || 'sum';
+
+            let chartConfig = null;
+
+            if (type === 'bar_chart') {
+                const { labels, values } = aggregateData(ordersData, xField, yField, aggregation);
+                chartConfig = {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `${aggregation} of ${yField}`,
+                            data: values,
+                            backgroundColor: chartBgColor,
+                            borderColor: chartColor,
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: getChartOptions(yField)
+                };
+            } else if (type === 'line_chart') {
+                const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
+                chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `${aggregation} of ${yField}`,
+                            data: values,
+                            borderColor: chartColor,
+                            backgroundColor: chartBgColor,
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false,
+                            pointRadius: 4,
+                            pointBackgroundColor: chartColor
+                        }]
+                    },
+                    options: getChartOptions(yField)
+                };
+            } else if (type === 'pie_chart') {
+                const statusGroups = {};
+                ordersData.forEach(order => {
+                    const status = order.status || 'Unknown';
+                    statusGroups[status] = (statusGroups[status] || 0) + 1;
+                });
+                chartConfig = {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusGroups),
+                        datasets: [{
+                            data: Object.values(statusGroups),
+                            backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { usePointStyle: true, font: { size: 11 } } }
+                        },
+                        cutout: '60%'
+                    }
+                };
+            } else if (type === 'area_chart') {
+                const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
+                chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `${aggregation} of ${yField}`,
+                            data: values,
+                            borderColor: chartColor,
+                            backgroundColor: chartBgColor,
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: getChartOptions(yField)
+                };
+            } else if (type === 'scatter_plot') {
+                const scatterData = ordersData.map(order => ({
+                    x: order.quantity || 0,
+                    y: order.unit_price || 0
+                }));
+                chartConfig = {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Quantity vs Price',
+                            data: scatterData,
+                            backgroundColor: chartColor,
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { title: { display: true, text: 'Quantity' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                            y: { title: { display: true, text: 'Price ($)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+                        }
+                    }
+                };
+            }
+
+            if (chartConfig) {
+                chartInstances[widgetId] = new Chart(ctx, chartConfig);
+            }
+        }
+
+        function getChartOptions(yLabel) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                    y: { title: { display: true, text: yLabel, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }
+                }
+            };
+        }
+
+        function initDataTable(widgetId) {
+            const table = document.getElementById(`table-${widgetId}`);
+            if (!table) return;
+            if (tableInstances[widgetId]) tableInstances[widgetId].destroy();
+
+            let tbodyHtml = '';
+            ordersData.forEach(order => {
+                const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A';
+                const statusClass = {
+                    'Completed': 'bg-green-100 text-green-700',
+                    'Pending': 'bg-yellow-100 text-yellow-700',
+                    'Processing': 'bg-blue-100 text-blue-700',
+                    'Cancelled': 'bg-red-100 text-red-700'
+                }[order.status] || 'bg-gray-100 text-gray-700';
+
+                tbodyHtml += `
+                    <tr>
+                        <td class="font-medium">${fullName}</td>
+                        <td>${order.product || ''}</td>
+                        <td>${order.quantity || 0}</td>
+                        <td>$${(order.total_amount || 0).toFixed(2)}</td>
+                        <td><span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${order.status || ''}</span></td>
+                    </tr>
+                `;
             });
-        });
-    }
 
-    function setupMobileMenu() {
-        const menuBtn = document.getElementById('mobileMenuBtn');
-        const library = document.getElementById('widgetLibrary');
-        if (menuBtn && library) {
-            menuBtn.addEventListener('click', () => library.classList.toggle('mobile-open'));
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth < 1024 && library.classList.contains('mobile-open') &&
-                    !library.contains(e.target) && !menuBtn.contains(e.target)) {
-                    library.classList.remove('mobile-open');
+            table.innerHTML = `
+                <thead>
+                    <tr><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr>
+                </thead>
+                <tbody>${tbodyHtml}</tbody>
+            `;
+
+            tableInstances[widgetId] = $(table).DataTable({
+                pageLength: 5,
+                lengthMenu: [5, 10, 25],
+                order: [[3, 'desc']],
+                language: { search: '', searchPlaceholder: 'Search...' }
+            });
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1],16), g: parseInt(result[2],16), b: parseInt(result[3],16) } : { r:79, g:70, b:229 };
+        }
+
+        // ==================== ADD WIDGET TO GRID ====================
+        function addWidgetToGrid(type, x, y, settings = {}) {
+            if (!grid) {
+                console.error('Grid not initialized');
+                return;
+            }
+
+            const config = widgetConfigs[type];
+            if (!config) {
+                console.error('Unknown widget type:', type);
+                return;
+            }
+
+            widgetCounter++;
+            const widgetId = `widget-${widgetCounter}`;
+
+            const widgetColor = settings.color || '#4F46E5';
+            const widgetTitle = settings.title || config.title;
+            const widgetWidth = settings.w || config.defaultW;
+            const widgetHeight = settings.h || config.defaultH;
+
+            widgetSettings[widgetId] = {
+                title: widgetTitle,
+                color: widgetColor,
+                xAxis: settings.xAxis || 'product',
+                yAxis: settings.yAxis || 'total_amount',
+                aggregation: settings.aggregation || 'sum'
+            };
+
+            const widgetElement = document.createElement('div');
+            widgetElement.className = 'grid-stack-item';
+            widgetElement.dataset.widgetId = widgetId;
+            widgetElement.dataset.widgetType = type;
+
+            const content = document.createElement('div');
+            content.className = 'grid-stack-item-content';
+
+            const header = document.createElement('div');
+            header.className = 'widget-header';
+            header.innerHTML = `
+                <span class="widget-title">${widgetTitle}</span>
+                <div class="widget-actions">
+                    <button class="widget-action-btn settings-btn" onclick="openSettingsPanel('${widgetId}')" title="Settings">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
+                    <button class="widget-action-btn delete" onclick="openDeleteModal('${widgetId}')" title="Delete">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+
+            content.appendChild(header);
+            content.appendChild(createWidgetContent(type, widgetId, widgetSettings[widgetId]));
+            widgetElement.appendChild(content);
+
+            const gridOptions = { w: widgetWidth, h: widgetHeight, minW: 2, minH: 2 };
+            if (x !== undefined && y !== undefined) {
+                gridOptions.x = x;
+                gridOptions.y = y;
+            }
+            grid.addWidget(widgetElement, gridOptions);
+            updateEmptyState();
+        }
+
+        // ==================== SETTINGS PANEL ====================
+        window.openSettingsPanel = function(widgetId) {
+            currentWidgetId = widgetId;
+            const widget = document.querySelector(`[data-widget-id="${widgetId}"]`);
+            if (!widget) return;
+
+            const type = widget.dataset.widgetType;
+            const config = widgetConfigs[type];
+            const settings = widgetSettings[widgetId] || {};
+
+            document.getElementById('settingTitle').value = settings.title || config.title;
+            document.getElementById('settingColor').value = settings.color || '#4F46E5';
+            document.getElementById('settingWidth').value = widget.getAttribute('gs-w');
+            document.getElementById('settingHeight').value = widget.getAttribute('gs-h');
+
+            if (settings.xAxis) document.getElementById('settingXAxis').value = settings.xAxis;
+            if (settings.yAxis) document.getElementById('settingYAxis').value = settings.yAxis;
+            if (settings.aggregation) document.getElementById('settingAggregation').value = settings.aggregation;
+
+            const showAxes = config.hasAxes;
+            document.getElementById('xAxisGroup').style.display = showAxes ? 'block' : 'none';
+            document.getElementById('yAxisGroup').style.display = showAxes ? 'block' : 'none';
+            document.getElementById('aggregationGroup').style.display = showAxes ? 'block' : 'none';
+
+            document.getElementById('settingsOverlay').classList.add('open');
+            document.getElementById('settingsPanel').classList.add('open');
+        };
+
+        window.closeSettingsPanel = function() {
+            document.getElementById('settingsOverlay').classList.remove('open');
+            document.getElementById('settingsPanel').classList.remove('open');
+            currentWidgetId = null;
+        };
+
+        window.applySettings = function() {
+            if (!currentWidgetId) return;
+            const widget = document.querySelector(`[data-widget-id="${currentWidgetId}"]`);
+            if (!widget) return;
+
+            const newTitle = document.getElementById('settingTitle').value;
+            const newColor = document.getElementById('settingColor').value;
+            const newWidth = parseInt(document.getElementById('settingWidth').value);
+            const newHeight = parseInt(document.getElementById('settingHeight').value);
+            const newXAxis = document.getElementById('settingXAxis').value;
+            const newYAxis = document.getElementById('settingYAxis').value;
+            const newAggregation = document.getElementById('settingAggregation').value;
+
+            widgetSettings[currentWidgetId] = {
+                title: newTitle,
+                color: newColor,
+                xAxis: newXAxis,
+                yAxis: newYAxis,
+                aggregation: newAggregation
+            };
+
+            const titleEl = widget.querySelector('.widget-title');
+            if (titleEl) titleEl.textContent = newTitle;
+
+            if (grid) grid.update(widget, { w: newWidth, h: newHeight });
+
+            const type = widget.dataset.widgetType;
+            if (type && !type.startsWith('kpi_') && type !== 'data_table') {
+                initChart(type, currentWidgetId, widgetSettings[currentWidgetId]);
+            } else if (type && type.startsWith('kpi_')) {
+                const content = widget.querySelector('.widget-content');
+                if (content) {
+                    const config = widgetConfigs[type];
+                    const comp = config.compute(ordersData);
+                    content.innerHTML = createKPIContent(comp.value, config.title, comp.trend, newColor);
+                }
+            }
+
+            showToast('Settings applied successfully');
+            closeSettingsPanel();
+        };
+
+        // ==================== DELETE MODAL ====================
+        window.openDeleteModal = function(widgetId) {
+            widgetToDelete = widgetId;
+            document.getElementById('deleteModal').classList.add('open');
+        };
+
+        window.closeDeleteModal = function() {
+            document.getElementById('deleteModal').classList.remove('open');
+            widgetToDelete = null;
+        };
+
+        window.confirmDelete = function() {
+            if (!widgetToDelete || !grid) return;
+            const widget = document.querySelector(`[data-widget-id="${widgetToDelete}"]`);
+            if (widget) {
+                if (chartInstances[widgetToDelete]) {
+                    chartInstances[widgetToDelete].destroy();
+                    delete chartInstances[widgetToDelete];
+                }
+                if (tableInstances[widgetToDelete]) {
+                    tableInstances[widgetToDelete].destroy();
+                    delete tableInstances[widgetToDelete];
+                }
+                delete widgetSettings[widgetToDelete];
+                grid.removeWidget(widget);
+            }
+            closeDeleteModal();
+            showToast('Widget removed');
+        };
+
+        // ==================== SAVE CONFIGURATION TO SUPABASE ====================
+        window.saveConfiguration = async function() {
+            if (!grid || !currentUserId) {
+                alert('Not authenticated or grid not ready');
+                return;
+            }
+
+            const widgets = grid.engine.nodes.map(node => {
+                const el = node.el;
+                const widgetId = el.dataset.widgetId;
+                const settings = widgetSettings[widgetId] || {};
+                return {
+                    widget_type: el.dataset.widgetType,
+                    pos_x: node.x,
+                    pos_y: node.y,
+                    width: node.w,
+                    height: node.h,
+                    settings: settings
+                };
+            });
+
+            const { data: dashboard, error: dashError } = await supabaseClient
+                .from('dashboard_configs')
+                .insert({
+                    user_id: currentUserId,
+                    name: 'My Dashboard',
+                    created_at: new Date()
+                })
+                .select()
+                .single();
+
+            if (dashError) {
+                console.error(dashError);
+                alert('Error saving dashboard');
+                return;
+            }
+
+            const dashboardId = dashboard.id;
+
+            const widgetsToInsert = widgets.map(w => ({
+                dashboard_id: dashboardId,
+                widget_type: w.widget_type,
+                pos_x: w.pos_x,
+                pos_y: w.pos_y,
+                width: w.width,
+                height: w.height,
+                settings: w.settings
+            }));
+
+            const { error: widgetError } = await supabaseClient
+                .from('dashboard_widgets')
+                .insert(widgetsToInsert);
+
+            if (widgetError) {
+                console.error(widgetError);
+                alert('Widget save failed');
+                return;
+            }
+
+            showToast('Dashboard saved successfully');
+        };
+
+        // ==================== LOAD LATEST USER CONFIG ====================
+        async function loadSavedConfig() {
+            if (!currentUserId) return;
+
+            const { data: dashboards, error } = await supabaseClient
+                .from('dashboard_configs')
+                .select('id')
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error || !dashboards || dashboards.length === 0) return;
+
+            const dashboardId = dashboards[0].id;
+
+            const { data: widgets, error: widgetError } = await supabaseClient
+                .from('dashboard_widgets')
+                .select('*')
+                .eq('dashboard_id', dashboardId);
+
+            if (widgetError || !widgets) return;
+
+            widgets.forEach(w => {
+                const settings = w.settings || {};
+                addWidgetToGrid(w.widget_type, w.pos_x, w.pos_y, {
+                    ...settings,
+                    w: w.width,
+                    h: w.height
+                });
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+
+        // ==================== DRAG & DROP SETUP ====================
+        function setupDragAndDrop() {
+            const widgetCards = document.querySelectorAll('.widget-card[draggable="true"]');
+            widgetCards.forEach(card => {
+                card.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.widgetType);
+                    this.classList.add('dragging');
+                });
+                card.addEventListener('dragend', function() { this.classList.remove('dragging'); });
+            });
+
+            const gridElement = document.getElementById('dashboardGrid');
+            if (!gridElement) return;
+            gridElement.addEventListener('dragover', e => e.preventDefault());
+            gridElement.addEventListener('drop', e => {
+                e.preventDefault();
+                const type = e.dataTransfer.getData('text/plain');
+                if (type) {
+                    addWidgetToGrid(type);
+                } else {
+                    console.warn('No widget type in drop event');
                 }
             });
         }
-    }
 
-    // ==================== INIT ====================
-    document.addEventListener('DOMContentLoaded', async function() {
-        await checkAuth();               // 1. ensure logged in, get userId
-        await fetchOrders();              // 2. load only this user's orders
-        initGrid();                       // 3. initialise grid
-        setupDragAndDrop();
-        setupWidgetSearch();
-        setupMobileMenu();
-        await loadSavedConfig();          // 4. load this user's saved config from Supabase
-    });
-</script>
+        function setupWidgetSearch() {
+            const searchInput = document.getElementById('widgetSearch');
+            if (!searchInput) return;
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('.widget-card').forEach(card => {
+                    card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+                });
+            });
+        }
+
+        function setupMobileMenu() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const library = document.getElementById('widgetLibrary');
+            if (menuBtn && library) {
+                menuBtn.addEventListener('click', () => library.classList.toggle('mobile-open'));
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024 && library.classList.contains('mobile-open') &&
+                        !library.contains(e.target) && !menuBtn.contains(e.target)) {
+                        library.classList.remove('mobile-open');
+                    }
+                });
+            }
+        }
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await fetchOrders();
+            initGrid();
+            setupDragAndDrop();
+            setupWidgetSearch();
+            setupMobileMenu();
+            await loadSavedConfig();
+        });
+    </script>
 </body>
-</html> 
+</html>
