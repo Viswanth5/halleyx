@@ -13,6 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Export libraries (same as configure-dashboard) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
     <style>
         /* === GLOBAL VARIABLES & RESET === */
         :root {
@@ -54,7 +59,7 @@
             height: 100vh;
         }
 
-        /* ===== MODERNIZED NAVBAR ===== */
+        /* ===== NAVBAR ===== */
         .navbar {
             flex-shrink: 0;
             height: 72px;
@@ -90,24 +95,36 @@
             color: var(--primary);
         }
 
-        .app-name {
-            font-weight: 800;
-            font-size: 1.35rem;
-            letter-spacing: -0.5px;
-            color: var(--text-primary);
+        /* Logo icon – matches login/dashboard */
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.4);
+        }
+
+        /* Override margin for navbar context */
+        .navbar-left .logo-icon {
+            margin-bottom: 0;
+        }
+
+        .app-logo {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .app-name::before {
-            content: '';
-            display: block;
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.4);
+        .app-name {
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
         }
 
         .navbar-center {
@@ -217,7 +234,7 @@
             position: relative;
         }
 
-        /* ===== PREMIUM SIDEBAR ===== */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
@@ -297,6 +314,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .page-header h1 {
@@ -304,6 +323,13 @@
             font-weight: 700;
             color: var(--text-primary);
             letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .btn-primary {
@@ -328,6 +354,87 @@
             background: var(--primary-dark);
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        /* Export dropdown button */
+        .btn-secondary {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            color: var(--text-primary);
+        }
+
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            z-index: 50;
+            min-width: 160px;
+        }
+        .export-dropdown-content button {
+            width: 100%;
+            text-align: left;
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            transition: background 0.1s;
+        }
+        .export-dropdown-content button:hover {
+            background: var(--body-bg);
+        }
+        .export-dropdown-content button i {
+            width: 18px;
+            color: var(--primary);
+        }
+        .export-dropdown.active .export-dropdown-content {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ===== ORDERS CARD & TABLE ===== */
@@ -661,6 +768,14 @@
             
             .modal-content { padding: 24px; border-radius: 20px; }
             .form-row { grid-template-columns: 1fr; gap: 16px; }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: space-between;
+            }
         }
 
         @media (max-width: 500px) {
@@ -676,12 +791,17 @@
         <header class="navbar">
             <div class="navbar-left">
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
-                <div class="app-name">Halleyx</div>
+                <!-- Logo + App Name -->
+                <div class="app-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span class="app-name">Halleyx</span>
+                </div>
             </div>
             <div class="navbar-center">
                 <label for="dateFilter"><i class="far fa-calendar" style="color:var(--primary); margin-right: 6px;"></i> Period</label>
                 <select id="dateFilter" class="date-dropdown">
-                    <!-- Added specific values for JS filtering -->
                     <option value="all">All time</option>
                     <option value="today">Today</option>
                     <option value="7d">Last 7 Days</option>
@@ -713,21 +833,36 @@
             <main class="content">
                 <div class="page-header">
                     <h1>Customer Orders</h1>
-                    <button class="btn-primary" id="createOrderBtn"><i class="fas fa-plus"></i> Create Order</button>
+                    <div class="header-actions">
+                        <!-- Export Dropdown -->
+                        <div class="export-dropdown" id="exportDropdown">
+                            <button class="btn-secondary" id="exportDropdownBtn">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <div class="export-dropdown-content">
+                                <button id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF Report</button>
+                                <button id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel Data</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="createOrderBtn"><i class="fas fa-plus"></i> Create Order</button>
+                    </div>
                 </div>
 
                 <div class="orders-card">
                     <div class="table-responsive" id="ordersTableContainer">
-                        <table id="ordersTable">
+                        <!-- Loading spinner will be shown here while loading -->
+                        <div id="loadingSpinner" class="spinner-container" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <table id="ordersTable" style="display: none;">
                             <thead>
                                 <tr>
                                     <th>Customer</th><th>Email</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Created By</th><th style="text-align:right;">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="ordersTableBody">
-                                <tr><td colspan="9" style="text-align:center; padding: 40px; color: var(--text-tertiary);">Loading orders...</td></tr>
-                            </tbody>
+                            <tbody id="ordersTableBody"></tbody>
                         </table>
+                        <div id="noOrdersMessage" style="display: none; text-align:center; padding: 40px; color: var(--text-tertiary); font-weight: 500;">No orders found for this period.</div>
                     </div>
                 </div>
             </main>
@@ -894,7 +1029,19 @@
             const modalTitle = document.getElementById('modalTitle');
             const orderIdHidden = document.getElementById('orderId');
             const tableBody = document.getElementById('ordersTableBody');
-            const dateFilter = document.getElementById('dateFilter'); // Filter element
+            const dateFilter = document.getElementById('dateFilter');
+            const ordersTable = document.getElementById('ordersTable');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const noOrdersMessage = document.getElementById('noOrdersMessage');
+
+            // Export elements
+            const exportDropdown = document.getElementById('exportDropdown');
+            const exportDropdownBtn = document.getElementById('exportDropdownBtn');
+            const exportPdfBtn = document.getElementById('exportPdfBtn');
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+
+            // Store current filtered orders for export
+            let currentOrders = [];
 
             // Total calculation
             const quantityInput = document.getElementById('quantity');
@@ -944,10 +1091,23 @@
             menuToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
             backdrop.addEventListener('click', closeSidebar);
 
+            // === Show/hide loading spinner ===
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    loadingSpinner.style.display = 'flex';
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'none';
+                } else {
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+
             // === CRUD: Load orders (filtered by user_id and date) ===
             async function loadOrders(filterValue = 'all') {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
+
+                setLoading(true);
 
                 let query = supabase
                     .from('customer_orders')
@@ -985,19 +1145,31 @@
                     query = query.gte('created_at', startDate);
                 }
 
-                // Execute query
                 const { data, error } = await query.order('created_at', { ascending: false });
+
+                setLoading(false);
 
                 if (error) {
                     console.error('Error loading orders:', error);
-                    tableBody.innerHTML = `<tr><td colspan="9" style="color:red;">Failed to load orders.</td></tr>`;
+                    tableBody.innerHTML = ''; // clear
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'block';
+                    noOrdersMessage.textContent = 'Failed to load orders.';
                     return;
                 }
+
+                currentOrders = data || []; // store for export
+
                 if (!data || data.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 40px; color: var(--text-tertiary); font-weight: 500;">No orders found for this period.</td></tr>`;
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'block';
+                    noOrdersMessage.textContent = 'No orders found for this period.';
                     return;
                 }
-                
+
+                ordersTable.style.display = 'table';
+                noOrdersMessage.style.display = 'none';
+
                 let html = '';
                 data.forEach(order => {
                     const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim();
@@ -1032,7 +1204,7 @@
             // Initial load
             loadOrders('all');
 
-            // Event Listener for Date Filter
+            // Date filter change
             dateFilter.addEventListener('change', (e) => {
                 loadOrders(e.target.value);
             });
@@ -1130,7 +1302,6 @@
                     alert('Error saving order: ' + error.message);
                 } else {
                     closeModal();
-                    // Refresh with current filter
                     loadOrders(dateFilter.value);
                 }
             });
@@ -1177,10 +1348,90 @@
                 if (error) {
                     alert('Delete failed: ' + error.message);
                 } else {
-                    // Refresh with current filter
                     loadOrders(dateFilter.value);
                 }
             }
+
+            // ========== EXPORT FUNCTIONS ==========
+            function showToast(msg, type = 'info') {
+                // Simple alert fallback; you could integrate a toast like in configure-dashboard
+                alert(msg);
+            }
+
+            // PDF Export: capture the orders table
+            window.exportOrdersAsPDF = function() {
+                const element = document.getElementById('ordersTable');
+                if (!element || element.style.display === 'none') {
+                    showToast('No data to export', 'error');
+                    return;
+                }
+
+                showToast('Generating PDF...', 'info');
+                html2canvas(element, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: false,
+                    useCORS: true
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF({
+                        orientation: 'landscape',
+                        unit: 'px',
+                        format: [canvas.width * 0.75, canvas.height * 0.75]
+                    });
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+                    pdf.save('orders-report.pdf');
+                    showToast('PDF downloaded', 'success');
+                }).catch(error => {
+                    console.error('PDF error:', error);
+                    showToast('Failed to generate PDF', 'error');
+                });
+            };
+
+            // Excel Export: export currentOrders
+            window.exportOrdersAsExcel = function() {
+                if (!currentOrders || currentOrders.length === 0) {
+                    showToast('No data to export', 'error');
+                    return;
+                }
+
+                try {
+                    // Prepare data: remove internal fields if desired (e.g., user_id, id)
+                    const exportData = currentOrders.map(({ id, user_id, created_at, ...rest }) => rest);
+                    const worksheet = XLSX.utils.json_to_sheet(exportData);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+                    XLSX.writeFile(workbook, 'orders-data.xlsx');
+                    showToast('Excel downloaded', 'success');
+                } catch (error) {
+                    console.error('Excel error:', error);
+                    showToast('Failed to generate Excel', 'error');
+                }
+            };
+
+            // Dropdown toggle
+            exportDropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                exportDropdown.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!exportDropdown.contains(e.target)) {
+                    exportDropdown.classList.remove('active');
+                }
+            });
+
+            // Attach export handlers
+            exportPdfBtn.addEventListener('click', () => {
+                exportDropdown.classList.remove('active');
+                window.exportOrdersAsPDF();
+            });
+            exportExcelBtn.addEventListener('click', () => {
+                exportDropdown.classList.remove('active');
+                window.exportOrdersAsExcel();
+            });
         })();
     </script>
 </body>

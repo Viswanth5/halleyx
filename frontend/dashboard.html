@@ -52,7 +52,6 @@
             height: 100vh;
             overflow: hidden;
             color: var(--text-primary);
-            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
 
         .app {
@@ -97,24 +96,36 @@
             color: var(--primary);
         }
 
-        .app-name {
-            font-weight: 800;
-            font-size: 1.35rem;
-            letter-spacing: -0.5px;
-            color: var(--text-primary);
+        /* Logo icon - consistent with login page */
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.4);
+        }
+
+        /* Override margin for navbar context */
+        .navbar-left .logo-icon {
+            margin-bottom: 0;
+        }
+
+        .app-logo {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .app-name::before {
-            content: '';
-            display: block;
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.4);
+        .app-name {
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
         }
 
         .navbar-center {
@@ -411,7 +422,7 @@
         .widget-view-card {
             background: white;
             border-radius: 16px;
-            padding: 16px; /* Reduced from 24px to match configure-dashboard */
+            padding: 16px;
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -427,7 +438,7 @@
             font-weight: 600;
             font-size: 1rem;
             color: var(--text-primary);
-            margin-bottom: 12px; /* Reduced from 20px */
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -436,10 +447,10 @@
         .widget-view-content {
             flex: 1;
             position: relative;
-            min-height: 150px; /* Reduced fallback */
+            min-height: 150px;
         }
         
-        /* KPI Widget Styles (matching configure-dashboard) */
+        /* KPI Widget Styles */
         .kpi-card {
             display: flex;
             flex-direction: column;
@@ -481,7 +492,26 @@
             background: #FEE2E2;
             color: #DC2626;
         }
-        /* ------------------------------------------------ */
+
+        /* AI Insight Widget */
+        .insight-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .insight-text {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+        .insight-refresh-btn {
+            margin-top: 8px;
+            align-self: flex-end;
+        }
 
         /* backdrop for mobile */
         .sidebar-backdrop {
@@ -581,7 +611,13 @@
                 <button class="menu-toggle" id="menuToggle" aria-label="Menu">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="app-name">Halleyx</div>
+                <!-- Logo + App Name -->
+                <div class="app-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span class="app-name">Halleyx</span>
+                </div>
             </div>
 
             <div class="navbar-center">
@@ -704,19 +740,15 @@
 
             // ===== Global state =====
             let currentUser = null;
-            let ordersData = [];                 // filtered by user + date range
-            let widgetsList = [];                 // loaded from dashboard_widgets
-            const chartInstances = {};            // key: widgetId (from DB)
-            const tableInstances = {};             // key: widgetId
+            let ordersData = [];
+            let widgetsList = [];
+            const chartInstances = {};
+            const tableInstances = {};
 
             // ===== Helper: hex to rgb =====
             function hexToRgb(hex) {
                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : { r: 79, g: 70, b: 229 };
+                return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 79, g: 70, b: 229 };
             }
 
             // ===== Authentication =====
@@ -782,32 +814,24 @@
                 return ordersData;
             }
 
-            // ===== Load the most recent dashboard config + widgets for this user =====
+            // ===== Load the most recent dashboard config + widgets =====
             async function loadUserConfig() {
                 if (!currentUser) return;
-
-                // get latest dashboard id
                 const { data: dashboards, error: dashError } = await supabase
                     .from('dashboard_configs')
                     .select('id')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: false })
                     .limit(1);
-
                 if (dashError || !dashboards || dashboards.length === 0) {
-                    // No saved config – leave widgets container empty (show nothing)
                     widgetsList = [];
                     return;
                 }
-
                 const dashboardId = dashboards[0].id;
-
-                // fetch all widgets for this dashboard
                 const { data: widgets, error: widgetError } = await supabase
                     .from('dashboard_widgets')
                     .select('*')
                     .eq('dashboard_id', dashboardId);
-
                 if (widgetError) {
                     console.error('Error loading widgets:', widgetError);
                     widgetsList = [];
@@ -816,7 +840,7 @@
                 }
             }
 
-            // ===== Clean up existing charts/tables before re-render =====
+            // ===== Clean up existing charts/tables =====
             function destroyAllWidgets() {
                 Object.values(chartInstances).forEach(chart => chart?.destroy());
                 Object.values(tableInstances).forEach(table => table?.destroy());
@@ -825,37 +849,29 @@
                 widgetsContainer.innerHTML = '';
             }
 
-            // ===== Render all widgets using current ordersData and widgetsList =====
+            // ===== Render all widgets =====
             function renderAllWidgets() {
                 destroyAllWidgets();
-
                 if (!widgetsList.length) {
-                    // optional empty message
                     widgetsContainer.innerHTML = '<p style="grid-column:span 12; text-align:center; color:var(--text-secondary); padding: 40px;">No widgets configured. Click "Add Widget" to start.</p>';
                     return;
                 }
-
-                // sort by pos_y then pos_x to maintain approximate layout
                 const sorted = [...widgetsList].sort((a,b) => {
                     if (a.pos_y === b.pos_y) return (a.pos_x || 0) - (b.pos_x || 0);
                     return (a.pos_y || 0) - (b.pos_y || 0);
                 });
-
-                sorted.forEach(widget => {
-                    renderWidget(widget);
-                });
+                sorted.forEach(widget => renderWidget(widget));
             }
 
             // ===== Render a single widget card =====
             function renderWidget(widget) {
                 const card = document.createElement('div');
                 card.className = 'widget-view-card';
-                card.dataset.widgetId = widget.id;   // use DB id as unique key
+                card.dataset.widgetId = widget.id;
 
                 const w = widget.width || 4;
                 const h = widget.height || 3;
                 card.style.gridColumn = `span ${w}`;
-                // minHeight = h * cellHeight + vertical padding (top+bottom = 32px)
                 card.style.minHeight = `${h * 80 + 32}px`;
 
                 const settings = widget.settings || {};
@@ -871,11 +887,10 @@
                 `;
                 widgetsContainer.appendChild(card);
 
-                // render the inner content based on type
                 renderWidgetContent(widget, contentId, color, settings);
             }
 
-            // ===== Fill widget content with real data =====
+            // ===== Fill widget content =====
             function renderWidgetContent(widget, containerId, color, settings) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -885,14 +900,12 @@
                 const chartColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
                 const chartBgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
 
-                // ---------- aggregation helpers (copied from configure-dashboard) ----------
+                // ===== Aggregation helpers =====
                 const aggregateData = (data, xField, yField, aggregation) => {
                     const groups = {};
                     data.forEach(item => {
-                        // Build key based on xField
                         let key;
                         if (xField === 'customer') {
-                            // Combine first_name and last_name
                             key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
                         } else if (xField === 'month') {
                             const date = new Date(item.created_at);
@@ -903,7 +916,6 @@
                         if (!groups[key]) groups[key] = [];
                         groups[key].push(item);
                     });
-
                     const labels = Object.keys(groups);
                     let values = labels.map(key => {
                         const group = groups[key];
@@ -918,7 +930,7 @@
                 };
 
                 const getTimeSeriesData = (data, yField, aggregation) => {
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
                     const groups = {};
                     data.forEach(item => {
                         const date = new Date(item.created_at);
@@ -926,7 +938,6 @@
                         if (!groups[month]) groups[month] = [];
                         groups[month].push(item);
                     });
-
                     const labels = months.filter(m => groups[m] && groups[m].length > 0);
                     let values = labels.map(month => {
                         const group = groups[month];
@@ -940,8 +951,8 @@
                     return { labels, values };
                 };
 
-                // ---------- render by type ----------
-                if (type === 'bar_chart' || type === 'line_chart' || type === 'area_chart' || type === 'scatter_plot' || type === 'pie_chart') {
+                // ===== Chart rendering =====
+                if (['bar_chart','line_chart','area_chart','scatter_plot','pie_chart'].includes(type)) {
                     const canvas = document.createElement('canvas');
                     container.appendChild(canvas);
 
@@ -954,113 +965,37 @@
                         const { labels, values } = aggregateData(ordersData, xField, yField, agg);
                         chartConfig = {
                             type: 'bar',
-                            data: {
-                                labels,
-                                datasets: [{
-                                    label: `${agg} of ${yField}`,
-                                    data: values,
-                                    backgroundColor: chartBgColor,
-                                    borderColor: chartColor,
-                                    borderWidth: 2,
-                                    borderRadius: 6
-                                }]
-                            },
-                            options: {
-                                responsive: true, maintainAspectRatio: false,
-                                plugins: { legend: { display: false } },
-                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                            }
+                            data: { labels, datasets: [{ label: `${agg} of ${yField}`, data: values, backgroundColor: chartBgColor, borderColor: chartColor, borderWidth: 2, borderRadius: 6 }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } } }
                         };
                     } else if (type === 'line_chart') {
                         const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
                         chartConfig = {
                             type: 'line',
-                            data: {
-                                labels,
-                                datasets: [{
-                                    label: `${agg} of ${yField}`,
-                                    data: values,
-                                    borderColor: chartColor,
-                                    backgroundColor: chartBgColor,
-                                    tension: 0.4,
-                                    fill: false,
-                                    pointRadius: 4,
-                                    pointBackgroundColor: chartColor
-                                }]
-                            },
-                            options: {
-                                responsive: true, maintainAspectRatio: false,
-                                plugins: { legend: { display: false } },
-                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                            }
+                            data: { labels, datasets: [{ label: `${agg} of ${yField}`, data: values, borderColor: chartColor, backgroundColor: chartBgColor, tension: 0.4, fill: false, pointRadius: 4, pointBackgroundColor: chartColor }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } } }
                         };
                     } else if (type === 'area_chart') {
                         const { labels, values } = getTimeSeriesData(ordersData, yField, agg);
                         chartConfig = {
                             type: 'line',
-                            data: {
-                                labels,
-                                datasets: [{
-                                    label: `${agg} of ${yField}`,
-                                    data: values,
-                                    borderColor: chartColor,
-                                    backgroundColor: chartBgColor,
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointRadius: 0
-                                }]
-                            },
-                            options: {
-                                responsive: true, maintainAspectRatio: false,
-                                plugins: { legend: { display: false } },
-                                scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } }
-                            }
+                            data: { labels, datasets: [{ label: `${agg} of ${yField}`, data: values, borderColor: chartColor, backgroundColor: chartBgColor, tension: 0.4, fill: true, pointRadius: 0 }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { title: { display: true, text: yField } } } }
                         };
                     } else if (type === 'scatter_plot') {
-                        const scatterData = ordersData.map(order => ({
-                            x: order.quantity || 0,
-                            y: order.unit_price || 0
-                        }));
+                        const scatterData = ordersData.map(order => ({ x: order.quantity || 0, y: order.unit_price || 0 }));
                         chartConfig = {
                             type: 'scatter',
-                            data: {
-                                datasets: [{
-                                    label: 'Quantity vs Price',
-                                    data: scatterData,
-                                    backgroundColor: chartColor,
-                                    pointRadius: 6
-                                }]
-                            },
-                            options: {
-                                responsive: true, maintainAspectRatio: false,
-                                plugins: { legend: { display: false } },
-                                scales: {
-                                    x: { title: { display: true, text: 'Quantity' } },
-                                    y: { title: { display: true, text: 'Price ($)' } }
-                                }
-                            }
+                            data: { datasets: [{ label: 'Quantity vs Price', data: scatterData, backgroundColor: chartColor, pointRadius: 6 }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Quantity' } }, y: { title: { display: true, text: 'Price ($)' } } } }
                         };
                     } else if (type === 'pie_chart') {
                         const statusGroups = {};
-                        ordersData.forEach(order => {
-                            const status = order.status || 'Unknown';
-                            statusGroups[status] = (statusGroups[status] || 0) + 1;
-                        });
+                        ordersData.forEach(order => { const status = order.status || 'Unknown'; statusGroups[status] = (statusGroups[status] || 0) + 1; });
                         chartConfig = {
                             type: 'doughnut',
-                            data: {
-                                labels: Object.keys(statusGroups),
-                                datasets: [{
-                                    data: Object.values(statusGroups),
-                                    backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'],
-                                    borderWidth: 0
-                                }]
-                            },
-                            options: {
-                                responsive: true, maintainAspectRatio: false,
-                                plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } },
-                                cutout: '60%'
-                            }
+                            data: { labels: Object.keys(statusGroups), datasets: [{ data: Object.values(statusGroups), backgroundColor: ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6'], borderWidth: 0 }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } }, cutout: '60%' }
                         };
                     }
 
@@ -1071,43 +1006,25 @@
                 else if (type === 'data_table') {
                     const tableId = `table-${widget.id}`;
                     container.innerHTML = `<table id="${tableId}" class="display" style="width:100%"></table>`;
-
-                    // Define columns with proper rendering for customer name
                     const columns = [
-                        {
-                            title: 'Customer',
-                            render: (data, type, row) => {
-                                const fullName = `${row.first_name || ''} ${row.last_name || ''}`.trim();
-                                return fullName || 'N/A';
-                            }
-                        },
+                        { title: 'Customer', render: (data, type, row) => `${row.first_name || ''} ${row.last_name || ''}`.trim() || 'N/A' },
                         { title: 'Product', data: 'product' },
                         { title: 'Qty', data: 'quantity' },
-                        {
-                            title: 'Total',
-                            data: 'total_amount',
-                            render: (data) => `$${parseFloat(data || 0).toFixed(2)}`
-                        },
+                        { title: 'Total', data: 'total_amount', render: (data) => `$${parseFloat(data || 0).toFixed(2)}` },
                         { title: 'Status', data: 'status' }
                     ];
-
-                    // jQuery DataTable
                     const $table = $(`#${tableId}`);
                     tableInstances[widget.id] = $table.DataTable({
                         data: ordersData,
                         columns: columns,
                         pageLength: 5,
                         lengthMenu: [5, 10, 25],
-                        order: [[3, 'desc']], // order by Total column (index 3)
+                        order: [[3, 'desc']],
                         language: { search: '', searchPlaceholder: 'Search...' }
                     });
                 }
                 else if (type.startsWith('kpi_')) {
-                    // compute KPI from ordersData
-                    let value = '';
-                    let trendValue = '+12.5%';  // placeholder trend
-                    let trendClass = 'up';
-
+                    let value = '', trendValue = '+12.5%', trendClass = 'up';
                     if (type === 'kpi_revenue') {
                         const total = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0);
                         value = `$${total.toLocaleString()}`;
@@ -1120,18 +1037,13 @@
                     } else if (type === 'kpi_pending') {
                         const pending = ordersData.filter(o => o.status === 'Pending').length;
                         value = pending.toLocaleString();
-                        // For pending, trend might be negative
                         trendValue = '-5.1%';
                         trendClass = 'down';
                     }
-
                     const label = settings.title || type.replace('kpi_','').replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
-                    
-                    // Smaller arrow (w-3.5 h-3.5) for better fit
                     const trendIcon = trendClass === 'up' 
                         ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
                         : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
-
                     container.innerHTML = `
                         <div class="kpi-card">
                             <div class="kpi-value" style="color: ${color}">${value}</div>
@@ -1143,70 +1055,102 @@
                         </div>
                     `;
                 }
+                else if (type === 'ai_insight') {
+                    container.innerHTML = `
+                        <div class="insight-container">
+                            <div id="insight-text-${widget.id}" class="insight-text">
+                                Click refresh to get AI insights...
+                            </div>
+                            <button onclick="window.refreshInsight('${widget.id}')" class="btn btn-secondary btn-sm insight-refresh-btn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    `;
+                    // Automatically fetch insight after a short delay
+                    setTimeout(() => window.refreshInsight(widget.id), 500);
+                }
             }
 
-            // ===== Update metric cards (top 3) based on ordersData =====
+            // ===== AI Insight fetch function (global) =====
+            window.refreshInsight = async function(widgetId) {
+                const container = document.getElementById(`insight-text-${widgetId}`);
+                if (!container) return;
+                container.innerHTML = '⏳ Generating insights...';
+
+                try {
+                    const summary = {
+                        totalOrders: ordersData.length,
+                        totalRevenue: ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0),
+                        productCounts: ordersData.reduce((acc, o) => { acc[o.product] = (acc[o.product] || 0) + 1; return acc; }, {}),
+                        statusBreakdown: ordersData.reduce((acc, o) => { acc[o.status] = (acc[o.status] || 0) + 1; return acc; }, {}),
+                        dateRange: dateFilter.value
+                    };
+
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const response = await fetch('https://icwvcbzhrxrrknxzmtbk.supabase.co/functions/v1/ai-insight', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session?.access_token}`
+                        },
+                        body: JSON.stringify({ summary })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to fetch insight');
+                    const data = await response.json();
+                    container.innerHTML = data.insight || 'No insights available.';
+                } catch (err) {
+                    container.innerHTML = '❌ Failed to load insights.';
+                    console.error(err);
+                }
+            };
+
+            // ===== Update metric cards =====
             function updateMetricCards() {
-                const totalCustomers = ordersData.length;
+                totalCustomersEl.textContent = ordersData.length;
                 const totalRevenue = ordersData.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0);
-                const pendingOrders = ordersData.filter(order => order.status === 'Pending').length;
-
-                totalCustomersEl.textContent = totalCustomers;
                 totalRevenueEl.textContent = totalRevenue >= 1000 ? `$${(totalRevenue / 1000).toFixed(1)}k` : `$${totalRevenue.toFixed(2)}`;
-                pendingOrdersEl.textContent = pendingOrders;
+                pendingOrdersEl.textContent = ordersData.filter(order => order.status === 'Pending').length;
             }
 
-            // ===== Refresh all data (called on date change) =====
+            // ===== Refresh all data =====
             async function refreshDashboard(dateRange) {
                 await fetchOrders(dateRange);
                 updateMetricCards();
-                renderAllWidgets();   // re-renders with new ordersData
+                renderAllWidgets();
             }
 
-            // ===== Event: date filter change =====
-            dateFilter.addEventListener('change', (e) => {
-                refreshDashboard(e.target.value);
-            });
+            dateFilter.addEventListener('change', (e) => refreshDashboard(e.target.value));
 
             // ===== Sidebar mobile toggle =====
-            function openSidebar() {
-                sidebar.classList.add('open');
-                backdrop.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-            function closeSidebar() {
-                sidebar.classList.remove('open');
-                backdrop.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-            menuToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-            });
+            function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('active'); document.body.style.overflow = 'hidden'; }
+            function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('active'); document.body.style.overflow = ''; }
+            menuToggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
             backdrop.addEventListener('click', closeSidebar);
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 768) closeSidebar();
-            });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
 
-            // ===== Configure button =====
-            configureBtn.addEventListener('click', () => {
-                window.location.href = 'configure-dashboard.html';
-            });
+            configureBtn.addEventListener('click', () => { window.location.href = 'configure-dashboard.html'; });
+
+            // ===== Real‑time subscription =====
+            function setupRealtimeSubscription() {
+                if (!currentUser) return;
+                const subscription = supabase
+                    .channel('orders-changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'customer_orders', filter: `user_id=eq.${currentUser.id}` },
+                        (payload) => { console.log('Realtime change detected:', payload); refreshDashboard(dateFilter.value); })
+                    .subscribe();
+                window.realtimeSubscription = subscription;
+            }
 
             // ===== INIT =====
             (async function init() {
                 await checkUser();
                 if (!currentUser) return;
-
-                // initial data fetch (all time)
                 await fetchOrders('all');
                 updateMetricCards();
-
-                // load saved widget configuration from Supabase
                 await loadUserConfig();
-
-                // render all widgets
                 renderAllWidgets();
+                setupRealtimeSubscription();
             })();
         })();
     </script>
