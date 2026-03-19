@@ -786,69 +786,70 @@
             });
 
             // ===== Fetch orders (filtered by user and date) =====
+            // ✅ FIXED: Uses full day range for "today" and midnight for other periods
             async function fetchOrders(dateRange = 'all') {
-    if (!currentUser) return [];
+                if (!currentUser) return [];
 
-    let query = supabase
-        .from('customer_orders')
-        .select('*')
-        .eq('user_id', currentUser.id);
+                let query = supabase
+                    .from('customer_orders')
+                    .select('*')
+                    .eq('user_id', currentUser.id);
 
-    const now = new Date();
-    let startDate = null;
-    let endDate = null;
+                const now = new Date();
+                let startDate = null;
+                let endDate = null;
 
-    switch (dateRange) {
-        case 'today': {
-            const start = new Date(now);
-            start.setHours(0, 0, 0, 0);               // local midnight today
-            startDate = start.toISOString();
-            const end = new Date(now);
-            end.setHours(24, 0, 0, 0);                 // local midnight tomorrow
-            endDate = end.toISOString();
-            break;
-        }
-        case '7d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 7);
-            start.setHours(0, 0, 0, 0);                // start of day 7 days ago
-            startDate = start.toISOString();
-            break;
-        }
-        case '30d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 30);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            break;
-        }
-        case '90d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 90);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            break;
-        }
-        default:
-            // 'all' – no filter
-            break;
-    }
+                switch (dateRange) {
+                    case 'today': {
+                        const start = new Date(now);
+                        start.setHours(0, 0, 0, 0);               // local midnight today
+                        startDate = start.toISOString();
+                        const end = new Date(now);
+                        end.setHours(24, 0, 0, 0);                 // local midnight tomorrow
+                        endDate = end.toISOString();
+                        break;
+                    }
+                    case '7d': {
+                        const start = new Date(now);
+                        start.setDate(start.getDate() - 7);
+                        start.setHours(0, 0, 0, 0);                // start of day 7 days ago
+                        startDate = start.toISOString();
+                        break;
+                    }
+                    case '30d': {
+                        const start = new Date(now);
+                        start.setDate(start.getDate() - 30);
+                        start.setHours(0, 0, 0, 0);
+                        startDate = start.toISOString();
+                        break;
+                    }
+                    case '90d': {
+                        const start = new Date(now);
+                        start.setDate(start.getDate() - 90);
+                        start.setHours(0, 0, 0, 0);
+                        startDate = start.toISOString();
+                        break;
+                    }
+                    default:
+                        // 'all' – no filter
+                        break;
+                }
 
-    if (startDate) {
-        query = query.gte('created_at', startDate);
-    }
-    if (endDate) {
-        query = query.lt('created_at', endDate);
-    }
+                if (startDate) {
+                    query = query.gte('created_at', startDate);
+                }
+                if (endDate) {
+                    query = query.lt('created_at', endDate);
+                }
 
-    const { data, error } = await query;
-    if (error) {
-        console.error('Error fetching orders:', error);
-        return [];
-    }
-    ordersData = data || [];
-    return ordersData;
-}
+                const { data, error } = await query;
+                if (error) {
+                    console.error('Error fetching orders:', error);
+                    return [];
+                }
+                ordersData = data || [];
+                return ordersData;
+            }
 
             // ===== Load the most recent dashboard config + widgets =====
             async function loadUserConfig() {

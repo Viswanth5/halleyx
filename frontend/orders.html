@@ -17,6 +17,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <style>
+        /* (your existing styles – unchanged) */
         :root {
             --primary: #4F46E5;
             --primary-light: #818cf8;
@@ -1099,120 +1100,130 @@
                 }
             }
 
+            // === Helper: get start and end UTC timestamps for the selected filter ===
+            function getDateRange(filterValue) {
+                const now = new Date();
+                let start = null;
+                let end = null;
+
+                switch (filterValue) {
+                    case 'today': {
+                        // Start of today in local time, converted to UTC moment
+                        const localStart = new Date(now);
+                        localStart.setHours(0, 0, 0, 0);
+                        start = localStart.toISOString();  // this gives the correct UTC moment for local midnight
+
+                        // End of today (start of tomorrow)
+                        const localEnd = new Date(localStart);
+                        localEnd.setDate(localEnd.getDate() + 1);
+                        end = localEnd.toISOString();
+                        break;
+                    }
+                    case '7d': {
+                        const localStart = new Date(now);
+                        localStart.setDate(localStart.getDate() - 7);
+                        localStart.setHours(0, 0, 0, 0);
+                        start = localStart.toISOString();
+                        // no end date – up to now
+                        break;
+                    }
+                    case '30d': {
+                        const localStart = new Date(now);
+                        localStart.setDate(localStart.getDate() - 30);
+                        localStart.setHours(0, 0, 0, 0);
+                        start = localStart.toISOString();
+                        break;
+                    }
+                    case '90d': {
+                        const localStart = new Date(now);
+                        localStart.setDate(localStart.getDate() - 90);
+                        localStart.setHours(0, 0, 0, 0);
+                        start = localStart.toISOString();
+                        break;
+                    }
+                    default:
+                        // 'all' – no filter
+                        break;
+                }
+
+                return { start, end };
+            }
+
             // === CRUD: Load orders (filtered by user_id and date) ===
             async function loadOrders(filterValue = 'all') {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
 
-    setLoading(true);
+                setLoading(true);
 
-    let query = supabase
-        .from('customer_orders')
-        .select('*')
-        .eq('user_id', user.id);
+                let query = supabase
+                    .from('customer_orders')
+                    .select('*')
+                    .eq('user_id', user.id);
 
-    const now = new Date();
-    let startDate = null;
-    let endDate = null;
+                const { start, end } = getDateRange(filterValue);
+                if (start) {
+                    query = query.gte('created_at', start);
+                }
+                if (end) {
+                    query = query.lt('created_at', end);
+                }
 
-    switch (filterValue) {
-        case 'today': {
-            const start = new Date(now);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            const end = new Date(now);
-            end.setHours(24, 0, 0, 0);
-            endDate = end.toISOString();
-            break;
-        }
-        case '7d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 7);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            break;
-        }
-        case '30d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 30);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            break;
-        }
-        case '90d': {
-            const start = new Date(now);
-            start.setDate(start.getDate() - 90);
-            start.setHours(0, 0, 0, 0);
-            startDate = start.toISOString();
-            break;
-        }
-        default:
-            // 'all' – no filter
-            break;
-    }
+                const { data, error } = await query.order('created_at', { ascending: false });
 
-    if (startDate) {
-        query = query.gte('created_at', startDate);
-    }
-    if (endDate) {
-        query = query.lt('created_at', endDate);
-    }
+                setLoading(false);
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+                if (error) {
+                    console.error('Error loading orders:', error);
+                    tableBody.innerHTML = '';
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'block';
+                    noOrdersMessage.textContent = 'Failed to load orders.';
+                    return;
+                }
 
-    setLoading(false);
+                currentOrders = data || [];
 
-    if (error) {
-        console.error('Error loading orders:', error);
-        tableBody.innerHTML = '';
-        ordersTable.style.display = 'none';
-        noOrdersMessage.style.display = 'block';
-        noOrdersMessage.textContent = 'Failed to load orders.';
-        return;
-    }
+                if (!data || data.length === 0) {
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'block';
+                    noOrdersMessage.textContent = 'No orders found for this period.';
+                    return;
+                }
 
-    currentOrders = data || [];
+                ordersTable.style.display = 'table';
+                noOrdersMessage.style.display = 'none';
 
-    if (!data || data.length === 0) {
-        ordersTable.style.display = 'none';
-        noOrdersMessage.style.display = 'block';
-        noOrdersMessage.textContent = 'No orders found for this period.';
-        return;
-    }
+                let html = '';
+                data.forEach(order => {
+                    const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim();
+                    const statusClass = (order.status || '').toLowerCase().replace(' ', '-');
+                    html += `<tr>
+                        <td data-label="Customer Name"><div style="font-weight: 600; color: var(--text-primary);">${fullName}</div></td>
+                        <td data-label="Email"><div style="color: var(--text-secondary);">${order.email || ''}</div></td>
+                        <td data-label="Product"><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${order.product || ''}">${order.product || ''}</div></td>
+                        <td data-label="Qty">${order.quantity || 0}</td>
+                        <td data-label="Total" style="font-weight: 600; color: var(--text-primary);">$${parseFloat(order.total_amount || 0).toFixed(2)}</td>
+                        <td data-label="Status"><span class="badge ${statusClass}">${order.status || ''}</span></td>
+                        <td data-label="Created By">${order.created_by || ''}</td>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                <button class="action-btn edit" data-id="${order.id}" title="Edit"><i class="fas fa-pen"></i></button>
+                                <button class="action-btn delete" data-id="${order.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tableBody.innerHTML = html;
 
-    ordersTable.style.display = 'table';
-    noOrdersMessage.style.display = 'none';
-
-    let html = '';
-    data.forEach(order => {
-        const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim();
-        const statusClass = (order.status || '').toLowerCase().replace(' ', '-');
-        html += `<tr>
-            <td data-label="Customer Name"><div style="font-weight: 600; color: var(--text-primary);">${fullName}</div></td>
-            <td data-label="Email"><div style="color: var(--text-secondary);">${order.email || ''}</div></td>
-            <td data-label="Product"><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${order.product || ''}">${order.product || ''}</div></td>
-            <td data-label="Qty">${order.quantity || 0}</td>
-            <td data-label="Total" style="font-weight: 600; color: var(--text-primary);">$${parseFloat(order.total_amount || 0).toFixed(2)}</td>
-            <td data-label="Status"><span class="badge ${statusClass}">${order.status || ''}</span></td>
-            <td data-label="Created By">${order.created_by || ''}</td>
-            <td data-label="Actions">
-                <div class="action-buttons">
-                    <button class="action-btn edit" data-id="${order.id}" title="Edit"><i class="fas fa-pen"></i></button>
-                    <button class="action-btn delete" data-id="${order.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
-        </tr>`;
-    });
-    tableBody.innerHTML = html;
-
-    // Attach edit/delete listeners
-    document.querySelectorAll('.action-btn.edit').forEach(btn => {
-        btn.addEventListener('click', (e) => openEditModal(e.target.closest('button').dataset.id));
-    });
-    document.querySelectorAll('.action-btn.delete').forEach(btn => {
-        btn.addEventListener('click', (e) => deleteOrder(e.target.closest('button').dataset.id));
-    });
-}
+                // Attach edit/delete listeners
+                document.querySelectorAll('.action-btn.edit').forEach(btn => {
+                    btn.addEventListener('click', (e) => openEditModal(e.target.closest('button').dataset.id));
+                });
+                document.querySelectorAll('.action-btn.delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => deleteOrder(e.target.closest('button').dataset.id));
+                });
+            }
 
             // Initial load
             loadOrders('all');
@@ -1367,11 +1378,9 @@
 
             // ========== EXPORT FUNCTIONS ==========
             function showToast(msg, type = 'info') {
-                // Simple alert fallback; you could integrate a toast like in configure-dashboard
                 alert(msg);
             }
 
-            // PDF Export: capture the orders table
             window.exportOrdersAsPDF = function() {
                 const element = document.getElementById('ordersTable');
                 if (!element || element.style.display === 'none') {
@@ -1402,7 +1411,6 @@
                 });
             };
 
-            // Excel Export: export currentOrders
             window.exportOrdersAsExcel = function() {
                 if (!currentOrders || currentOrders.length === 0) {
                     showToast('No data to export', 'error');
@@ -1410,7 +1418,6 @@
                 }
 
                 try {
-                    // Prepare data: remove internal fields if desired (e.g., user_id, id)
                     const exportData = currentOrders.map(({ id, user_id, created_at, ...rest }) => rest);
                     const worksheet = XLSX.utils.json_to_sheet(exportData);
                     const workbook = XLSX.utils.book_new();
@@ -1429,14 +1436,12 @@
                 exportDropdown.classList.toggle('active');
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (!exportDropdown.contains(e.target)) {
                     exportDropdown.classList.remove('active');
                 }
             });
 
-            // Attach export handlers
             exportPdfBtn.addEventListener('click', () => {
                 exportDropdown.classList.remove('active');
                 window.exportOrdersAsPDF();
