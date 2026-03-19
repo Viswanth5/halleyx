@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halleyx · Customer Orders</title>
-    <!-- Font Awesome 6 -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Supabase JS -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Export libraries (same as configure-dashboard) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        /* === GLOBAL VARIABLES & RESET === */
         :root {
             --primary: #4F46E5;
             --primary-light: #818cf8;
@@ -1104,102 +1101,118 @@
 
             // === CRUD: Load orders (filtered by user_id and date) ===
             async function loadOrders(filterValue = 'all') {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-                setLoading(true);
+    setLoading(true);
 
-                let query = supabase
-                    .from('customer_orders')
-                    .select('*')
-                    .eq('user_id', user.id);
+    let query = supabase
+        .from('customer_orders')
+        .select('*')
+        .eq('user_id', user.id);
 
-                // Date Filtering Logic
-                const now = new Date();
-                let startDate = null;
+    const now = new Date();
+    let startDate = null;
+    let endDate = null;
 
-                switch (filterValue) {
-                    case 'today':
-                        startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-                        break;
-                    case '7d':
-                        const sevenDaysAgo = new Date();
-                        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                        startDate = sevenDaysAgo.toISOString();
-                        break;
-                    case '30d':
-                        const thirtyDaysAgo = new Date();
-                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                        startDate = thirtyDaysAgo.toISOString();
-                        break;
-                    case '90d':
-                        const ninetyDaysAgo = new Date();
-                        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-                        startDate = ninetyDaysAgo.toISOString();
-                        break;
-                    default:
-                        startDate = null;
-                }
+    switch (filterValue) {
+        case 'today': {
+            const start = new Date(now);
+            start.setHours(0, 0, 0, 0);
+            startDate = start.toISOString();
+            const end = new Date(now);
+            end.setHours(24, 0, 0, 0);
+            endDate = end.toISOString();
+            break;
+        }
+        case '7d': {
+            const start = new Date(now);
+            start.setDate(start.getDate() - 7);
+            start.setHours(0, 0, 0, 0);
+            startDate = start.toISOString();
+            break;
+        }
+        case '30d': {
+            const start = new Date(now);
+            start.setDate(start.getDate() - 30);
+            start.setHours(0, 0, 0, 0);
+            startDate = start.toISOString();
+            break;
+        }
+        case '90d': {
+            const start = new Date(now);
+            start.setDate(start.getDate() - 90);
+            start.setHours(0, 0, 0, 0);
+            startDate = start.toISOString();
+            break;
+        }
+        default:
+            // 'all' – no filter
+            break;
+    }
 
-                if (startDate) {
-                    query = query.gte('created_at', startDate);
-                }
+    if (startDate) {
+        query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+        query = query.lt('created_at', endDate);
+    }
 
-                const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false });
 
-                setLoading(false);
+    setLoading(false);
 
-                if (error) {
-                    console.error('Error loading orders:', error);
-                    tableBody.innerHTML = ''; // clear
-                    ordersTable.style.display = 'none';
-                    noOrdersMessage.style.display = 'block';
-                    noOrdersMessage.textContent = 'Failed to load orders.';
-                    return;
-                }
+    if (error) {
+        console.error('Error loading orders:', error);
+        tableBody.innerHTML = '';
+        ordersTable.style.display = 'none';
+        noOrdersMessage.style.display = 'block';
+        noOrdersMessage.textContent = 'Failed to load orders.';
+        return;
+    }
 
-                currentOrders = data || []; // store for export
+    currentOrders = data || [];
 
-                if (!data || data.length === 0) {
-                    ordersTable.style.display = 'none';
-                    noOrdersMessage.style.display = 'block';
-                    noOrdersMessage.textContent = 'No orders found for this period.';
-                    return;
-                }
+    if (!data || data.length === 0) {
+        ordersTable.style.display = 'none';
+        noOrdersMessage.style.display = 'block';
+        noOrdersMessage.textContent = 'No orders found for this period.';
+        return;
+    }
 
-                ordersTable.style.display = 'table';
-                noOrdersMessage.style.display = 'none';
+    ordersTable.style.display = 'table';
+    noOrdersMessage.style.display = 'none';
 
-                let html = '';
-                data.forEach(order => {
-                    const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim();
-                    const statusClass = (order.status || '').toLowerCase().replace(' ', '-');
-                    html += `<tr>
-                        <td data-label="Customer Name"><div style="font-weight: 600; color: var(--text-primary);">${fullName}</div></td>
-                        <td data-label="Email"><div style="color: var(--text-secondary);">${order.email || ''}</div></td>
-                        <td data-label="Product"><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${order.product || ''}">${order.product || ''}</div></td>
-                        <td data-label="Qty">${order.quantity || 0}</td>
-                        <td data-label="Total" style="font-weight: 600; color: var(--text-primary);">$${parseFloat(order.total_amount || 0).toFixed(2)}</td>
-                        <td data-label="Status"><span class="badge ${statusClass}">${order.status || ''}</span></td>
-                        <td data-label="Created By">${order.created_by || ''}</td>
-                        <td data-label="Actions">
-                            <div class="action-buttons">
-                                <button class="action-btn edit" data-id="${order.id}" title="Edit"><i class="fas fa-pen"></i></button>
-                                <button class="action-btn delete" data-id="${order.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>`;
-                });
-                tableBody.innerHTML = html;
+    let html = '';
+    data.forEach(order => {
+        const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim();
+        const statusClass = (order.status || '').toLowerCase().replace(' ', '-');
+        html += `<tr>
+            <td data-label="Customer Name"><div style="font-weight: 600; color: var(--text-primary);">${fullName}</div></td>
+            <td data-label="Email"><div style="color: var(--text-secondary);">${order.email || ''}</div></td>
+            <td data-label="Product"><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${order.product || ''}">${order.product || ''}</div></td>
+            <td data-label="Qty">${order.quantity || 0}</td>
+            <td data-label="Total" style="font-weight: 600; color: var(--text-primary);">$${parseFloat(order.total_amount || 0).toFixed(2)}</td>
+            <td data-label="Status"><span class="badge ${statusClass}">${order.status || ''}</span></td>
+            <td data-label="Created By">${order.created_by || ''}</td>
+            <td data-label="Actions">
+                <div class="action-buttons">
+                    <button class="action-btn edit" data-id="${order.id}" title="Edit"><i class="fas fa-pen"></i></button>
+                    <button class="action-btn delete" data-id="${order.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    });
+    tableBody.innerHTML = html;
 
-                // Attach edit/delete listeners
-                document.querySelectorAll('.action-btn.edit').forEach(btn => {
-                    btn.addEventListener('click', (e) => openEditModal(e.target.closest('button').dataset.id));
-                });
-                document.querySelectorAll('.action-btn.delete').forEach(btn => {
-                    btn.addEventListener('click', (e) => deleteOrder(e.target.closest('button').dataset.id));
-                });
-            }
+    // Attach edit/delete listeners
+    document.querySelectorAll('.action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', (e) => openEditModal(e.target.closest('button').dataset.id));
+    });
+    document.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', (e) => deleteOrder(e.target.closest('button').dataset.id));
+    });
+}
 
             // Initial load
             loadOrders('all');
