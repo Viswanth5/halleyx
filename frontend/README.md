@@ -83,5 +83,5 @@ git clone https://github.com/your-username/halleyx-dashboard.git
 cd halleyx-dashboard
 
 use this for the test case :
-email: test@gmail.com
+email: sai@gmail.com
 password : Viswa@05
