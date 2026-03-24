@@ -76,13 +76,12 @@ Icons       Font Awesome 6
 - Modern web browser (Chrome, Firefox, Edge, Safari)
  Setup & Installation
 
- 1. Clone Repository
+ Clone Repository
 
 ```bash
 git clone https://github.com/your-username/halleyx-dashboard.git
 cd halleyx-dashboard
 
-for test case :
-use the 
+use this for the test case :
 email: test@gmail.com
 password : Viswa@05

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Dashboard Configuration · Halleyx</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -21,23 +21,22 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Gridstack CSS -->
+    <!-- jQuery + jQuery UI + Touch Punch (for touch drag/resize) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    
+    <!-- Gridstack CSS + JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@9.5.0/dist/gridstack.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@9.5.0/dist/gridstack-all.js"></script>
     
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
-    <!-- Gridstack JS -->
-    <script src="https://cdn.jsdelivr.net/npm/gridstack@9.5.0/dist/gridstack-all.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -80,6 +79,11 @@
             --danger: #EF4444;
             --primary: #6366F1;
             --primary-light: #818cf8;
+        }
+
+        /* Better touch handling */
+        body {
+            touch-action: manipulation; /* Prevents zooming on double-tap, makes drag smoother */
         }
 
         .logo-icon {
@@ -321,6 +325,15 @@
             background: linear-gradient(to bottom, #FAFBFC, #FFFFFF);
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
+            cursor: move; /* Indicates draggable */
+            touch-action: none; /* Improves touch dragging */
+        }
+        
+        /* Larger touch target on mobile */
+        @media (max-width: 768px) {
+            .widget-header {
+                padding: 18px 16px;
+            }
         }
         
         .widget-title {
@@ -328,6 +341,7 @@
             font-size: 13px;
             color: var(--fg);
             letter-spacing: -0.01em;
+            pointer-events: none; /* So the whole header is draggable */
         }
         
         .widget-actions {
@@ -353,6 +367,7 @@
             color: var(--muted);
             cursor: pointer;
             transition: all 0.15s ease;
+            touch-action: manipulation;
         }
         
         .widget-action-btn:hover {
@@ -480,6 +495,7 @@
             border: none;
             white-space: nowrap;
             position: relative;
+            touch-action: manipulation;
         }
         
         .btn-primary {
@@ -1885,12 +1901,19 @@
         function setupDragAndDrop() {
             const widgetCards = document.querySelectorAll('.widget-card[draggable="true"]');
             widgetCards.forEach(card => {
+                // HTML5 drag for desktop
                 card.addEventListener('dragstart', function(e) { 
                     e.dataTransfer.setData('text/plain', this.dataset.widgetType); 
                     this.classList.add('dragging'); 
                 });
                 card.addEventListener('dragend', function() { 
                     this.classList.remove('dragging'); 
+                });
+                // Touch fallback: tap to add
+                card.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    const type = this.dataset.widgetType;
+                    if (type) addWidgetToGrid(type);
                 });
             });
             const gridElement = document.getElementById('dashboardGrid');
