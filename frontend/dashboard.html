@@ -96,7 +96,6 @@
             color: var(--primary);
         }
 
-        /* Logo icon - consistent with login page */
         .logo-icon {
             width: 48px;
             height: 48px;
@@ -110,7 +109,6 @@
             box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.4);
         }
 
-        /* Override margin for navbar context */
         .navbar-left .logo-icon {
             margin-bottom: 0;
         }
@@ -357,6 +355,85 @@
             box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
         }
 
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .filter-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            color: var(--text-primary);
+        }
+
         /* ===== METRIC CARDS ===== */
         .metrics-grid {
             display: grid;
@@ -493,34 +570,61 @@
             color: #DC2626;
         }
 
-        /* AI Insight Widget */
-        .insight-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .insight-text {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px;
-            background: #f9fafb;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-        .insight-refresh-btn {
-            margin-top: 8px;
-            align-self: flex-end;
-        }
-
-        /* backdrop for mobile */
-        .sidebar-backdrop {
+        /* Modal for drill-down */
+        .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.5);
-            z-index: 15;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-tertiary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .close-modal:hover {
+            background: var(--body-bg);
+            color: var(--text-primary);
         }
 
         /* DataTables tweaks */
@@ -596,6 +700,14 @@
                 height: auto !important;
                 margin-bottom: 16px;
             }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-buttons {
+                justify-content: flex-end;
+            }
         }
 
         @media (max-width: 500px) {
@@ -611,7 +723,6 @@
                 <button class="menu-toggle" id="menuToggle" aria-label="Menu">
                     <i class="fas fa-bars"></i>
                 </button>
-                <!-- Logo + App Name -->
                 <div class="app-logo">
                     <div class="logo-icon">
                         <i class="fas fa-bolt"></i>
@@ -671,6 +782,36 @@
                     <button class="configure-btn" id="configureDashboardBtn">
                         <i class="fas fa-plus"></i> Add Widget
                     </button>
+                </div>
+
+                <!-- Global Filters Bar -->
+                <div class="filter-bar">
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select id="filterStatus" class="filter-input">
+                                <option value="all">All</option>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Product</label>
+                            <select id="filterProduct" class="filter-input">
+                                <option value="all">All</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Customer (name search)</label>
+                            <input type="text" id="filterCustomer" class="filter-input" placeholder="Type name...">
+                        </div>
+                        <div class="filter-buttons">
+                            <button id="applyFiltersBtn" class="btn-primary">Apply</button>
+                            <button id="resetFiltersBtn" class="btn-secondary">Reset</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Redesigned Metrics -->
@@ -737,6 +878,11 @@
             const totalRevenueEl = document.getElementById('totalRevenue');
             const pendingOrdersEl = document.getElementById('pendingOrders');
             const widgetsContainer = document.getElementById('dashboardWidgets');
+            const filterStatus = document.getElementById('filterStatus');
+            const filterProduct = document.getElementById('filterProduct');
+            const filterCustomer = document.getElementById('filterCustomer');
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
             // ===== Global state =====
             let currentUser = null;
@@ -744,6 +890,8 @@
             let widgetsList = [];
             const chartInstances = {};
             const tableInstances = {};
+            let currentFilters = { status: 'all', product: 'all', customer: '' };
+            let currentDateRange = 'all';
 
             // ===== Helper: hex to rgb =====
             function hexToRgb(hex) {
@@ -785,9 +933,8 @@
                 logout();
             });
 
-            // ===== Fetch orders (filtered by user and date) =====
-            // ✅ FIXED: Uses full day range for "today" and midnight for other periods
-            async function fetchOrders(dateRange = 'all') {
+            // ===== Fetch orders (filtered by user, date range, and global filters) =====
+            async function fetchOrders(dateRange = 'all', filters = {}) {
                 if (!currentUser) return [];
 
                 let query = supabase
@@ -795,6 +942,7 @@
                     .select('*')
                     .eq('user_id', currentUser.id);
 
+                // Date filter
                 const now = new Date();
                 let startDate = null;
                 let endDate = null;
@@ -802,17 +950,17 @@
                 switch (dateRange) {
                     case 'today': {
                         const start = new Date(now);
-                        start.setHours(0, 0, 0, 0);               // local midnight today
+                        start.setHours(0, 0, 0, 0);
                         startDate = start.toISOString();
                         const end = new Date(now);
-                        end.setHours(24, 0, 0, 0);                 // local midnight tomorrow
+                        end.setHours(24, 0, 0, 0);
                         endDate = end.toISOString();
                         break;
                     }
                     case '7d': {
                         const start = new Date(now);
                         start.setDate(start.getDate() - 7);
-                        start.setHours(0, 0, 0, 0);                // start of day 7 days ago
+                        start.setHours(0, 0, 0, 0);
                         startDate = start.toISOString();
                         break;
                     }
@@ -831,7 +979,6 @@
                         break;
                     }
                     default:
-                        // 'all' – no filter
                         break;
                 }
 
@@ -842,6 +989,18 @@
                     query = query.lt('created_at', endDate);
                 }
 
+                // Apply global filters
+                if (filters.status && filters.status !== 'all') {
+                    query = query.eq('status', filters.status);
+                }
+                if (filters.product && filters.product !== 'all') {
+                    query = query.eq('product', filters.product);
+                }
+                if (filters.customer && filters.customer.trim() !== '') {
+                    const trimmedCustomer = filters.customer.trim();   // <-- FIX: trim the input
+                    query = query.or(`first_name.ilike.%${trimmedCustomer}%,last_name.ilike.%${trimmedCustomer}%`);
+                }
+
                 const { data, error } = await query;
                 if (error) {
                     console.error('Error fetching orders:', error);
@@ -849,6 +1008,21 @@
                 }
                 ordersData = data || [];
                 return ordersData;
+            }
+
+            // ===== Populate product dropdown with distinct products (unfiltered) =====
+            async function updateProductDropdown() {
+                const { data, error } = await supabase
+                    .from('customer_orders')
+                    .select('product')
+                    .eq('user_id', currentUser.id);
+                if (error) return;
+                const products = [...new Set(data.map(o => o.product))];
+                const select = filterProduct;
+                select.innerHTML = '<option value="all">All</option>';
+                products.forEach(p => {
+                    select.innerHTML += `<option value="${p}">${p}</option>`;
+                });
             }
 
             // ===== Load the most recent dashboard config + widgets =====
@@ -927,7 +1101,78 @@
                 renderWidgetContent(widget, contentId, color, settings);
             }
 
-            // ===== Fill widget content =====
+            // ===== Drill‑down modal =====
+            function showDetailModal(field, value) {
+                // Filter ordersData based on field and value
+                let filtered = [];
+                if (field === 'product') {
+                    filtered = ordersData.filter(o => o.product === value);
+                } else if (field === 'status') {
+                    filtered = ordersData.filter(o => o.status === value);
+                } else if (field === 'month') {
+                    filtered = ordersData.filter(o => {
+                        const month = new Date(o.created_at).toLocaleString('default', { month: 'short' });
+                        return month === value;
+                    });
+                } else {
+                    filtered = ordersData;
+                }
+
+                if (filtered.length === 0) {
+                    alert('No orders found for this selection.');
+                    return;
+                }
+
+                // Build modal HTML
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 80vw;">
+                        <div class="modal-header">
+                            <h2>${field}: ${value}</h2>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table id="detailTable" class="display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filtered.map(order => `
+                                        <tr>
+                                            <td>${order.first_name || ''} ${order.last_name || ''}</td>
+                                            <td>${order.product || ''}</td>
+                                            <td>${order.quantity || 0}</td>
+                                            <td>$${(order.total_amount || 0).toFixed(2)}</td>
+                                            <td>${order.status || ''}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.classList.add('active');
+
+                // Initialize DataTable
+                const table = modal.querySelector('#detailTable');
+                $(table).DataTable({
+                    pageLength: 10,
+                    order: [[3, 'desc']],
+                    language: { search: '', searchPlaceholder: 'Search...' }
+                });
+
+                modal.querySelector('.close-modal').onclick = () => modal.remove();
+            }
+
+            // ===== Fill widget content (with drill‑down click handlers) =====
             function renderWidgetContent(widget, containerId, color, settings) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -988,7 +1233,7 @@
                     return { labels, values };
                 };
 
-                // ===== Chart rendering =====
+                // ===== Chart rendering with drill‑down =====
                 if (['bar_chart','line_chart','area_chart','scatter_plot','pie_chart'].includes(type)) {
                     const canvas = document.createElement('canvas');
                     container.appendChild(canvas);
@@ -1037,7 +1282,20 @@
                     }
 
                     if (chartConfig) {
-                        chartInstances[widget.id] = new Chart(canvas, chartConfig);
+                        const chart = new Chart(canvas, chartConfig);
+                        chartInstances[widget.id] = chart;
+
+                        // Attach drill‑down click handler
+                        canvas.onclick = (event) => {
+                            const activePoints = chart.getElementsAtEvent(event);
+                            if (activePoints.length > 0) {
+                                const dataIndex = activePoints[0].index;
+                                let label = chart.data.labels[dataIndex];
+                                let field = xField;
+                                if (type === 'pie_chart') field = 'status';
+                                showDetailModal(field, label);
+                            }
+                        };
                     }
                 }
                 else if (type === 'data_table') {
@@ -1098,12 +1356,11 @@
                             <div id="insight-text-${widget.id}" class="insight-text">
                                 Click refresh to get AI insights...
                             </div>
-                            <button onclick="window.refreshInsight('${widget.id}')" class="btn btn-secondary btn-sm insight-refresh-btn">
+                            <button onclick="window.refreshInsight('${widget.id}')" class="btn-secondary btn-sm insight-refresh-btn" style="margin-top: 8px;">
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
                     `;
-                    // Automatically fetch insight after a short delay
                     setTimeout(() => window.refreshInsight(widget.id), 500);
                 }
             }
@@ -1120,7 +1377,8 @@
                         totalRevenue: ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0),
                         productCounts: ordersData.reduce((acc, o) => { acc[o.product] = (acc[o.product] || 0) + 1; return acc; }, {}),
                         statusBreakdown: ordersData.reduce((acc, o) => { acc[o.status] = (acc[o.status] || 0) + 1; return acc; }, {}),
-                        dateRange: dateFilter.value
+                        dateRange: dateFilter.value,
+                        filters: currentFilters
                     };
 
                     const { data: { session } } = await supabase.auth.getSession();
@@ -1151,13 +1409,29 @@
             }
 
             // ===== Refresh all data =====
-            async function refreshDashboard(dateRange) {
-                await fetchOrders(dateRange);
+            async function refreshDashboard(dateRange, filters = currentFilters) {
+                await fetchOrders(dateRange, filters);
                 updateMetricCards();
                 renderAllWidgets();
             }
 
-            dateFilter.addEventListener('change', (e) => refreshDashboard(e.target.value));
+            // ===== Filter handlers =====
+            function applyFilters() {
+                currentFilters.status = filterStatus.value;
+                currentFilters.product = filterProduct.value;
+                // Trim the customer input before storing in currentFilters
+                currentFilters.customer = filterCustomer.value.trim();
+                currentDateRange = dateFilter.value;
+                refreshDashboard(currentDateRange, currentFilters);
+            }
+
+            function resetFilters() {
+                filterStatus.value = 'all';
+                filterProduct.value = 'all';
+                filterCustomer.value = '';
+                currentFilters = { status: 'all', product: 'all', customer: '' };
+                refreshDashboard(dateFilter.value, currentFilters);
+            }
 
             // ===== Sidebar mobile toggle =====
             function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('active'); document.body.style.overflow = 'hidden'; }
@@ -1174,7 +1448,7 @@
                 const subscription = supabase
                     .channel('orders-changes')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'customer_orders', filter: `user_id=eq.${currentUser.id}` },
-                        (payload) => { console.log('Realtime change detected:', payload); refreshDashboard(dateFilter.value); })
+                        (payload) => { console.log('Realtime change detected:', payload); refreshDashboard(dateFilter.value, currentFilters); })
                     .subscribe();
                 window.realtimeSubscription = subscription;
             }
@@ -1183,11 +1457,17 @@
             (async function init() {
                 await checkUser();
                 if (!currentUser) return;
-                await fetchOrders('all');
+                await updateProductDropdown();
+                await fetchOrders('all', { status: 'all', product: 'all', customer: '' });
                 updateMetricCards();
                 await loadUserConfig();
                 renderAllWidgets();
                 setupRealtimeSubscription();
+
+                // Event listeners
+                dateFilter.addEventListener('change', () => refreshDashboard(dateFilter.value, currentFilters));
+                applyFiltersBtn.addEventListener('click', applyFilters);
+                resetFiltersBtn.addEventListener('click', resetFilters);
             })();
         })();
     </script>

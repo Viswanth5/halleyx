@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Configuration · Halleyx</title>
-    <!-- Font Awesome (required for the bolt icon) -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -55,9 +55,9 @@
                             700: '#3730A3',
                         },
                         surface: {
-                            bg: '#F5F7FB',
+                            bg: '#F8FAFC',
                             card: '#FFFFFF',
-                            border: '#E5E7EB',
+                            border: '#E2E8F0',
                         }
                     }
                 }
@@ -67,32 +67,32 @@
     
     <style>
         :root {
-            --bg: #F5F7FB;
-            --fg: #1F2937;
-            --muted: #6B7280;
-            --accent: #4F46E5;
+            --bg: #F8FAFC;
+            --fg: #0F172A;
+            --muted: #64748B;
+            --accent: #6366F1;
             --accent-light: #EEF2FF;
-            --accent-dark: #3730A3;
+            --accent-dark: #4F46E5;
             --card: #FFFFFF;
-            --border: #E5E7EB;
+            --border: #E2E8F0;
             --success: #10B981;
             --warning: #F59E0B;
             --danger: #EF4444;
-            --primary: #4F46E5;
+            --primary: #6366F1;
             --primary-light: #818cf8;
         }
 
         .logo-icon {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 10px;
+            border-radius: 12px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 1.25rem;
-            box-shadow: 0 6px 14px -3px rgba(79, 70, 229, 0.35);
+            box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4);
         }
         
         * {
@@ -108,10 +108,26 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
         
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
         }
         
         ::-webkit-scrollbar-track {
@@ -120,7 +136,7 @@
         
         ::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 3px;
+            border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
@@ -131,17 +147,17 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
         
         .header-inner {
             max-width: 1800px;
             margin: 0 auto;
-            padding: 0 16px;
-            height: 60px;
+            padding: 0 20px;
+            height: 68px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -151,40 +167,57 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         
         .header-title {
-            font-size: 1.125rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
             color: var(--fg);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.03em;
         }
         
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
         .widget-library {
             background: var(--card);
             border-right: 1px solid var(--border);
             overflow-y: auto;
+            position: relative;
+            z-index: 1;
         }
         
         .widget-card {
             cursor: grab;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--border);
             background: var(--card);
             user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .widget-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
         }
         
         .widget-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.2);
             border-color: var(--accent);
+        }
+
+        .widget-card:hover::before {
+            opacity: 1;
         }
         
         .widget-card:active {
@@ -204,13 +237,21 @@
         
         .grid-stack {
             background: 
-                linear-gradient(rgba(79, 70, 229, 0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(79, 70, 229, 0.025) 1px, transparent 1px);
-            background-size: 24px 24px;
-            min-height: 600px;
-            border-radius: 16px;
-            border: 2px dashed rgba(79, 70, 229, 0.15);
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            min-height: 650px;
+            border-radius: 20px;
+            border: 2px dashed rgba(99, 102, 241, 0.2);
             position: relative;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .grid-stack.drag-over {
+            border-color: var(--accent);
+            background: 
+                linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
         }
         
         .grid-stack-item {
@@ -219,17 +260,17 @@
         
         .grid-stack-item-content {
             background: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border);
             overflow: hidden;
-            transition: box-shadow 0.2s ease;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
             display: flex;
             flex-direction: column;
         }
         
         .grid-stack-item:hover .grid-stack-item-content {
-            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 8px 30px -6px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         
         .grid-stack-placeholder {
@@ -239,7 +280,7 @@
         .grid-stack-placeholder > .placeholder-content {
             background: var(--accent-light);
             border: 2px dashed var(--accent);
-            border-radius: 12px;
+            border-radius: 16px;
         }
         
         .ui-resizable-handle {
@@ -247,51 +288,53 @@
         }
         
         .ui-resizable-se {
-            width: 20px;
-            height: 20px;
-            bottom: 4px;
-            right: 4px;
+            width: 24px;
+            height: 24px;
+            bottom: 6px;
+            right: 6px;
             cursor: se-resize;
         }
         
         .ui-resizable-se::after {
             content: '';
             position: absolute;
-            right: 4px;
-            bottom: 4px;
-            width: 8px;
-            height: 8px;
+            right: 6px;
+            bottom: 6px;
+            width: 10px;
+            height: 10px;
             border-right: 2px solid var(--muted);
             border-bottom: 2px solid var(--muted);
-            opacity: 0.3;
+            opacity: 0.25;
             transition: opacity 0.2s;
+            border-radius: 2px;
         }
         
         .grid-stack-item:hover .ui-resizable-se::after {
-            opacity: 0.7;
+            opacity: 0.6;
         }
         
         .widget-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 14px;
-            background: linear-gradient(to bottom, #FAFAFA, #FFFFFF);
+            padding: 14px 16px;
+            background: linear-gradient(to bottom, #FAFBFC, #FFFFFF);
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
         
         .widget-title {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             color: var(--fg);
+            letter-spacing: -0.01em;
         }
         
         .widget-actions {
             display: flex;
             gap: 4px;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s ease;
         }
         
         .grid-stack-item:hover .widget-actions {
@@ -299,12 +342,12 @@
         }
         
         .widget-action-btn {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 8px;
             border: none;
             background: transparent;
             color: var(--muted);
@@ -323,7 +366,7 @@
         }
         
         .widget-content {
-            padding: 16px;
+            padding: 18px;
             flex-grow: 1;
             position: relative;
             overflow: auto;
@@ -348,24 +391,24 @@
         }
         
         .empty-state-icon {
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 20px;
-            opacity: 0.3;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            opacity: 0.25;
             color: var(--accent);
         }
         
         .settings-panel {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 400px;
+            right: -420px;
+            width: 420px;
             height: 100vh;
             background: var(--card);
             border-left: 1px solid var(--border);
             z-index: 200;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -12px 0 40px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
         }
         
@@ -376,11 +419,12 @@
         .settings-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(15, 23, 42, 0.3);
             z-index: 199;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
         }
         
         .settings-overlay.open {
@@ -391,14 +435,15 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(15, 23, 42, 0.4);
             z-index: 300;
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(6px);
         }
         
         .modal-overlay.open {
@@ -408,13 +453,13 @@
         
         .modal {
             background: var(--card);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 400px;
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 420px;
             width: 90%;
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            transform: scale(0.92);
+            transition: transform 0.25s ease;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
         }
         
         .modal-overlay.open .modal {
@@ -425,26 +470,27 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 16px;
-            border-radius: 8px;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 10px;
             font-weight: 600;
             font-size: 13px;
             cursor: pointer;
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
             white-space: nowrap;
+            position: relative;
         }
         
         .btn-primary {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
+            box-shadow: 0 4px 14px -3px rgba(99, 102, 241, 0.4);
         }
         
         .btn-primary:hover {
-            background: var(--accent-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.5);
         }
         
         .btn-primary:active {
@@ -458,25 +504,28 @@
         }
         
         .btn-secondary:hover {
-            background: #F9FAFB;
+            background: #F8FAFC;
             border-color: var(--muted);
+            transform: translateY(-1px);
         }
         
         .btn-secondary:active {
-            background: #F3F4F6;
+            background: #F1F5F9;
         }
         
         .btn-danger {
-            background: var(--danger);
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
             color: white;
+            box-shadow: 0 4px 14px -3px rgba(239, 68, 68, 0.4);
         }
         
         .btn-danger:hover {
-            background: #DC2626;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.5);
         }
         
         .btn-icon {
-            padding: 10px;
+            padding: 12px;
         }
         
         .btn svg {
@@ -486,7 +535,7 @@
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
         
         .form-label {
@@ -494,16 +543,17 @@
             font-weight: 600;
             font-size: 13px;
             color: var(--fg);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
         }
         
         .form-input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
             background: var(--card);
             font-family: inherit;
         }
@@ -511,14 +561,14 @@
         .form-input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-light);
+            box-shadow: 0 0 0 4px var(--accent-light);
         }
         
         .color-picker {
             width: 100%;
-            height: 40px;
+            height: 44px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             padding: 4px;
         }
@@ -526,37 +576,39 @@
         .category-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 14px 20px 6px;
+            gap: 10px;
+            padding: 16px 20px 8px;
             font-weight: 700;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             color: var(--muted);
         }
         
         .kpi-value {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 800;
             color: var(--fg);
             line-height: 1;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         
         .kpi-label {
             font-size: 13px;
             color: var(--muted);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-weight: 500;
         }
         
         .kpi-trend {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             font-size: 12px;
             font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 5px 10px;
+            border-radius: 8px;
         }
         
         .kpi-trend.up {
@@ -571,22 +623,22 @@
         
         .toast {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            bottom: 28px;
+            right: 28px;
             background: var(--fg);
             color: white;
-            padding: 14px 20px;
-            border-radius: 10px;
-            font-weight: 500;
+            padding: 16px 22px;
+            border-radius: 12px;
+            font-weight: 600;
             font-size: 14px;
             z-index: 500;
-            transform: translateY(100px);
+            transform: translateY(120px);
             opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            gap: 12px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
         }
         
         .toast.show {
@@ -595,11 +647,11 @@
         }
         
         .toast.success {
-            background: var(--success);
+            background: linear-gradient(135deg, var(--success) 0%, #34D399 100%);
         }
         
         .toast.error {
-            background: var(--danger);
+            background: linear-gradient(135deg, var(--danger) 0%, #F87171 100%);
         }
         
         .dataTables_wrapper {
@@ -611,32 +663,36 @@
         }
         
         table.dataTable thead th {
-            background: #FAFAFA;
-            font-weight: 600;
+            background: #F8FAFC;
+            font-weight: 700;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
             color: var(--muted);
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-bottom: 1px solid var(--border);
         }
         
         table.dataTable tbody td {
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-bottom: 1px solid var(--border);
+        }
+
+        table.dataTable tbody tr:hover {
+            background: #F8FAFC;
         }
         
         .dataTables_filter input {
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 6px 10px;
+            border-radius: 8px;
+            padding: 8px 12px;
             font-size: 13px;
         }
         
         .dataTables_length select {
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 4px 8px;
+            border-radius: 8px;
+            padding: 6px 10px;
         }
         
         /* Export Dropdown Styles */
@@ -646,18 +702,18 @@
         
         .dropdown-menu {
             position: absolute;
-            top: calc(100% + 6px);
+            top: calc(100% + 8px);
             right: 0;
-            min-width: 180px;
+            min-width: 190px;
             background: var(--card);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-            padding: 6px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+            padding: 8px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-8px);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 110;
         }
         
@@ -670,9 +726,9 @@
         .dropdown-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 8px;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: 500;
             color: var(--fg);
@@ -693,13 +749,13 @@
             width: 18px;
             height: 18px;
             flex-shrink: 0;
-            opacity: 0.7;
+            opacity: 0.6;
         }
         
         .dropdown-divider {
             height: 1px;
             background: var(--border);
-            margin: 6px 0;
+            margin: 8px 0;
         }
         
         /* Loading state */
@@ -715,8 +771,8 @@
         .btn.loading::after {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top-color: white;
             border-radius: 50%;
@@ -730,7 +786,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(24px);
             }
             to {
                 opacity: 1;
@@ -738,8 +794,39 @@
             }
         }
         
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
         .animate-fade-in-up {
-            animation: fadeInUp 0.4s ease forwards;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .animate-slide-in {
+            animation: slideInRight 0.4s ease forwards;
+        }
+
+        /* Widget icon styling */
+        .widget-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .widget-card:hover .widget-icon {
+            transform: scale(1.08);
         }
         
         @media (prefers-reduced-motion: reduce) {
@@ -752,7 +839,7 @@
         
         @media (max-width: 1024px) {
             .widget-library {
-                width: 220px;
+                width: 240px;
             }
         }
         
@@ -771,10 +858,10 @@
             
             .widget-library {
                 position: fixed;
-                left: -280px;
-                top: 60px;
-                width: 280px;
-                height: calc(100vh - 60px);
+                left: -300px;
+                top: 68px;
+                width: 300px;
+                height: calc(100vh - 68px);
                 z-index: 50;
                 transition: left 0.3s ease;
             }
@@ -860,13 +947,13 @@
         </div>
     </header>
     
-    <div class="flex h-[calc(100vh-60px)]">
+    <div class="flex h-[calc(100vh-68px)]">
         <!-- Widget Library -->
-        <aside class="widget-library w-64 flex-shrink-0" id="widgetLibrary">
-            <div class="p-4">
+        <aside class="widget-library w-72 flex-shrink-0" id="widgetLibrary">
+            <div class="p-5">
                 <div class="relative">
-                    <input type="text" placeholder="Search widgets..." class="form-input pl-10" id="widgetSearch">
-                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <input type="text" placeholder="Search widgets..." class="form-input pl-11" id="widgetSearch">
+                    <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
@@ -879,52 +966,52 @@
                 </svg>
                 Charts
             </div>
-            <div class="px-4 pb-2 space-y-2">
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="bar_chart">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="px-5 pb-3 space-y-3">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="bar_chart">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-indigo-50">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Bar Chart</span>
+                        <span class="font-semibold text-sm">Bar Chart</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="line_chart">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="line_chart">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-emerald-50">
+                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Line Chart</span>
+                        <span class="font-semibold text-sm">Line Chart</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="pie_chart">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="pie_chart">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-amber-50">
+                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Pie Chart</span>
+                        <span class="font-semibold text-sm">Pie Chart</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="area_chart">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-sky-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="area_chart">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-sky-50">
+                            <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Area Chart</span>
+                        <span class="font-semibold text-sm">Area Chart</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="scatter_plot">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="scatter_plot">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-violet-50">
+                            <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <circle cx="8" cy="8" r="2" fill="currentColor"/>
                                 <circle cx="16" cy="12" r="2" fill="currentColor"/>
                                 <circle cx="12" cy="16" r="2" fill="currentColor"/>
@@ -932,7 +1019,7 @@
                                 <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Scatter Plot</span>
+                        <span class="font-semibold text-sm">Scatter Plot</span>
                     </div>
                 </div>
             </div>
@@ -944,15 +1031,15 @@
                 </svg>
                 Tables
             </div>
-            <div class="px-4 pb-2 space-y-2">
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="data_table">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="px-5 pb-3 space-y-3">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="data_table">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-slate-100">
+                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Data Table</span>
+                        <span class="font-semibold text-sm">Data Table</span>
                     </div>
                 </div>
             </div>
@@ -964,52 +1051,52 @@
                 </svg>
                 KPIs
             </div>
-            <div class="px-4 pb-4 space-y-2">
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="kpi_revenue">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="px-5 pb-5 space-y-3">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="kpi_revenue">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-green-50">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Total Revenue</span>
+                        <span class="font-semibold text-sm">Total Revenue</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="kpi_orders">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="kpi_orders">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-blue-50">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Total Orders</span>
+                        <span class="font-semibold text-sm">Total Orders</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="kpi_average">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="kpi_average">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-purple-50">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Average Order</span>
+                        <span class="font-semibold text-sm">Average Order</span>
                     </div>
                 </div>
-                <div class="widget-card rounded-xl p-3" draggable="true" data-widget-type="kpi_pending">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="widget-card rounded-xl p-4" draggable="true" data-widget-type="kpi_pending">
+                    <div class="flex items-center gap-4">
+                        <div class="widget-icon bg-orange-50">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <span class="font-medium text-sm">Pending Orders</span>
+                        <span class="font-semibold text-sm">Pending Orders</span>
                     </div>
                 </div>
             </div>
         </aside>
         
         <!-- Dashboard Canvas -->
-        <main class="flex-1 p-4 md:p-6 overflow-auto relative">
+        <main class="flex-1 p-5 md:p-6 overflow-auto relative">
             <div class="grid-stack" id="dashboardGrid"></div>
             
             <!-- Empty state -->
@@ -1017,8 +1104,8 @@
                 <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
                 </svg>
-                <p class="text-lg font-semibold mb-1">Drag widgets here</p>
-                <p class="text-sm opacity-70">Start building your dashboard</p>
+                <p class="text-lg font-bold mb-2">Drag widgets here</p>
+                <p class="text-sm opacity-60">Start building your dashboard</p>
             </div>
         </main>
     </div>
@@ -1027,8 +1114,8 @@
     <div class="settings-overlay" id="settingsOverlay"></div>
     <aside class="settings-panel" id="settingsPanel">
         <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold">Widget Settings</h2>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold">Widget Settings</h2>
                 <button class="widget-action-btn" id="closeSettingsBtn" aria-label="Close settings">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1044,7 +1131,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Primary Color</label>
-                    <input type="color" class="color-picker" id="settingColor" value="#4F46E5">
+                    <input type="color" class="color-picker" id="settingColor" value="#6366F1">
                 </div>
                 
                 <div class="form-group" id="xAxisGroup" style="display: none;">
@@ -1087,7 +1174,7 @@
                     <input type="number" class="form-input" id="settingHeight" min="2" max="10" value="4">
                 </div>
                 
-                <div class="flex gap-3 mt-8">
+                <div class="flex gap-3 mt-10">
                     <button type="button" class="btn btn-primary flex-1" id="applySettingsBtn">Apply Changes</button>
                     <button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
                 </div>
@@ -1098,15 +1185,15 @@
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-5 mb-5">
+                <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg">Delete Widget</h3>
-                    <p class="text-gray-500 text-sm">Are you sure you want to remove this widget?</p>
+                    <h3 class="font-bold text-xl">Delete Widget</h3>
+                    <p class="text-gray-500 text-sm mt-1">Are you sure you want to remove this widget?</p>
                 </div>
             </div>
             <div class="flex gap-3 justify-end">
@@ -1141,9 +1228,9 @@
         const tableInstances = {};
         const widgetSettings = {};
         let ordersData = [];
-
-        // Make ordersData globally accessible for export
-        window.ordersData = ordersData;
+        let currentDashboardId = null;
+        let isSelfChange = false;
+        let realtimeSubscription = null;
 
         // ==================== AUTHENTICATION ====================
         async function checkAuth() {
@@ -1168,7 +1255,6 @@
                 return [];
             }
             ordersData = data || [];
-            window.ordersData = ordersData;
             return ordersData;
         }
 
@@ -1184,7 +1270,7 @@
                 title: 'Total Revenue', defaultW: 3, defaultH: 2, hasAxes: false,
                 compute: (data) => {
                     const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-                    return { value: `$${total.toLocaleString()}`, trend: '+12.5%' };
+                    return { value: '$' + total.toLocaleString(), trend: '+12.5%' };
                 }
             },
             kpi_orders: {
@@ -1196,7 +1282,7 @@
                 compute: (data) => {
                     const total = data.reduce((sum, order) => sum + (order.total_amount || 0), 0);
                     const avg = data.length ? total / data.length : 0;
-                    return { value: `$${avg.toFixed(2)}`, trend: '+3.8%' };
+                    return { value: '$' + avg.toFixed(2), trend: '+3.8%' };
                 }
             },
             kpi_pending: {
@@ -1235,7 +1321,11 @@
             const gridElement = document.getElementById('dashboardGrid');
             if (!gridElement) return;
             grid = GridStack.init({
-                column: 12, cellHeight: 80, margin: 12, animate: true, float: false,
+                column: 12, 
+                cellHeight: 80, 
+                margin: 14, 
+                animate: true, 
+                float: false,
                 draggable: { handle: '.widget-header' },
                 resizable: { handles: 'se' },
                 responsive: true,
@@ -1258,7 +1348,7 @@
             const groups = {};
             data.forEach(item => {
                 let key;
-                if (xField === 'customer') key = `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
+                if (xField === 'customer') key = (item.first_name || '') + ' ' + (item.last_name || '');
                 else if (xField === 'month') key = new Date(item.created_at).toLocaleString('default', { month: 'short' });
                 else key = item[xField] || 'Unknown';
                 if (!groups[key]) groups[key] = [];
@@ -1302,14 +1392,14 @@
         function createWidgetContent(type, widgetId, settings) {
             const contentDiv = document.createElement('div');
             contentDiv.className = 'widget-content';
-            contentDiv.id = `content-${widgetId}`;
+            contentDiv.id = 'content-' + widgetId;
             const config = widgetConfigs[type];
             if (!config) return contentDiv;
             if (type.startsWith('kpi_')) {
                 const comp = config.compute(ordersData);
-                contentDiv.innerHTML = createKPIContent(comp.value, config.title, comp.trend, '#4F46E5');
+                contentDiv.innerHTML = createKPIContent(comp.value, config.title, comp.trend, '#6366F1');
             } else if (type === 'data_table') {
-                contentDiv.innerHTML = '<table class="w-full" id="table-' + widgetId + '"></table>';
+                contentDiv.innerHTML = '<table class="w-full" id="table-' + widgetId + '">' + '</table>';
                 setTimeout(() => initDataTable(widgetId), 100);
             } else {
                 contentDiv.innerHTML = '<canvas id="chart-' + widgetId + '"></canvas>';
@@ -1324,60 +1414,144 @@
             const trendIcon = trendUp
                 ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
                 : '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>';
-            return `<div class="kpi-card"><div class="kpi-value" style="color:${color}">${value}</div><div class="kpi-label">${label}</div><div class="kpi-trend ${trendClass}">${trendIcon} ${trend} this month</div></div>`;
+            return '<div class="kpi-card"><div class="kpi-value" style="color:' + color + '">' + value + '</div><div class="kpi-label">' + label + '</div><div class="kpi-trend ' + trendClass + '">' + trendIcon + ' ' + trend + ' this month</div></div>';
         }
 
         async function initChart(type, widgetId, settings) {
-            const canvas = document.getElementById(`chart-${widgetId}`);
+            const canvas = document.getElementById('chart-' + widgetId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
             if (chartInstances[widgetId]) chartInstances[widgetId].destroy();
 
-            const color = settings?.color || '#4F46E5';
+            const color = settings?.color || '#6366F1';
             const rgb = hexToRgb(color);
-            const chartColor = `rgba(${rgb.r},${rgb.g},${rgb.b},1)`;
-            const chartBgColor = `rgba(${rgb.r},${rgb.g},${rgb.b},0.1)`;
+            const chartColor = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',1)';
+            const chartBgColor = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.15)';
             let xField = settings?.xAxis || 'product';
             let yField = settings?.yAxis || 'total_amount';
             let aggregation = settings?.aggregation || 'sum';
             let chartConfig = null;
 
             if (type === 'bar_chart') {
-                const { labels, values } = aggregateData(ordersData, xField, yField, aggregation);
+                const aggregated = aggregateData(ordersData, xField, yField, aggregation);
                 chartConfig = {
                     type: 'bar',
-                    data: { labels, datasets: [{ label: `${aggregation} of ${yField}`, data: values, backgroundColor: chartBgColor, borderColor: chartColor, borderWidth: 2, borderRadius: 6 }] },
+                    data: { 
+                        labels: aggregated.labels, 
+                        datasets: [{ 
+                            label: aggregation + ' of ' + yField, 
+                            data: aggregated.values, 
+                            backgroundColor: chartBgColor, 
+                            borderColor: chartColor, 
+                            borderWidth: 2, 
+                            borderRadius: 8 
+                        }] 
+                    },
                     options: getChartOptions(yField)
                 };
             } else if (type === 'line_chart') {
-                const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
+                const timeSeries = getTimeSeriesData(ordersData, yField, aggregation);
                 chartConfig = {
                     type: 'line',
-                    data: { labels, datasets: [{ label: `${aggregation} of ${yField}`, data: values, borderColor: chartColor, backgroundColor: chartBgColor, borderWidth: 2, tension: 0.4, fill: false, pointRadius: 4, pointBackgroundColor: chartColor }] },
+                    data: { 
+                        labels: timeSeries.labels, 
+                        datasets: [{ 
+                            label: aggregation + ' of ' + yField, 
+                            data: timeSeries.values, 
+                            borderColor: chartColor, 
+                            backgroundColor: chartBgColor, 
+                            borderWidth: 3, 
+                            tension: 0.4, 
+                            fill: false, 
+                            pointRadius: 5, 
+                            pointBackgroundColor: chartColor,
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        }] 
+                    },
                     options: getChartOptions(yField)
                 };
             } else if (type === 'pie_chart') {
                 const statusGroups = {};
-                ordersData.forEach(order => { const s = order.status || 'Unknown'; statusGroups[s] = (statusGroups[s]||0)+1; });
+                ordersData.forEach(order => { 
+                    const s = order.status || 'Unknown'; 
+                    statusGroups[s] = (statusGroups[s] || 0) + 1; 
+                });
                 chartConfig = {
                     type: 'doughnut',
-                    data: { labels: Object.keys(statusGroups), datasets: [{ data: Object.values(statusGroups), backgroundColor: ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: { size: 11 } } } }, cutout: '60%' }
+                    data: { 
+                        labels: Object.keys(statusGroups), 
+                        datasets: [{ 
+                            data: Object.values(statusGroups), 
+                            backgroundColor: ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6','#EC4899'], 
+                            borderWidth: 0,
+                            hoverOffset: 8
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { 
+                                position: 'right', 
+                                labels: { 
+                                    usePointStyle: true, 
+                                    font: { size: 12, weight: '500' },
+                                    padding: 16
+                                } 
+                            } 
+                        }, 
+                        cutout: '55%' 
+                    }
                 };
             } else if (type === 'area_chart') {
-                const { labels, values } = getTimeSeriesData(ordersData, yField, aggregation);
+                const timeSeries = getTimeSeriesData(ordersData, yField, aggregation);
                 chartConfig = {
                     type: 'line',
-                    data: { labels, datasets: [{ label: `${aggregation} of ${yField}`, data: values, borderColor: chartColor, backgroundColor: chartBgColor, borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0 }] },
+                    data: { 
+                        labels: timeSeries.labels, 
+                        datasets: [{ 
+                            label: aggregation + ' of ' + yField, 
+                            data: timeSeries.values, 
+                            borderColor: chartColor, 
+                            backgroundColor: chartBgColor, 
+                            borderWidth: 3, 
+                            tension: 0.4, 
+                            fill: true, 
+                            pointRadius: 0 
+                        }] 
+                    },
                     options: getChartOptions(yField)
                 };
             } else if (type === 'scatter_plot') {
                 const scatterData = ordersData.map(order => ({ x: order.quantity || 0, y: order.unit_price || 0 }));
                 chartConfig = {
                     type: 'scatter',
-                    data: { datasets: [{ label: 'Quantity vs Price', data: scatterData, backgroundColor: chartColor, pointRadius: 6 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Quantity' }, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { title: { display: true, text: 'Price ($)' }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
+                    data: { 
+                        datasets: [{ 
+                            label: 'Quantity vs Price', 
+                            data: scatterData, 
+                            backgroundColor: chartColor, 
+                            pointRadius: 7,
+                            pointHoverRadius: 10
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { 
+                                title: { display: true, text: 'Quantity', font: { size: 12, weight: '600' } }, 
+                                grid: { color: 'rgba(0,0,0,0.04)' } 
+                            }, 
+                            y: { 
+                                title: { display: true, text: 'Price ($)', font: { size: 12, weight: '600' } }, 
+                                grid: { color: 'rgba(0,0,0,0.04)' } 
+                            } 
+                        } 
+                    }
                 };
             }
             if (chartConfig) chartInstances[widgetId] = new Chart(ctx, chartConfig);
@@ -1385,56 +1559,74 @@
 
         function getChartOptions(yLabel) {
             return {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false }
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                    y: { title: { display: true, text: yLabel, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { font: { size: 11 } } 
+                    },
+                    y: { 
+                        title: { display: true, text: yLabel, font: { size: 12, weight: '600' } }, 
+                        grid: { color: 'rgba(0,0,0,0.04)' }, 
+                        ticks: { font: { size: 11 } } 
+                    }
                 }
             };
         }
 
         function initDataTable(widgetId) {
-            const table = document.getElementById(`table-${widgetId}`);
+            const table = document.getElementById('table-' + widgetId);
             if (!table) return;
             if (tableInstances[widgetId]) tableInstances[widgetId].destroy();
 
-            let tbodyHtml = '';
+            let theadHtml = '<thead><tr><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>';
+            let tbodyHtml = '<tbody>';
             ordersData.forEach(order => {
-                const fullName = `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A';
+                const fullName = (order.first_name || '') + ' ' + (order.last_name || '');
                 const statusClass = {
                     'Completed': 'bg-green-100 text-green-700',
                     'Pending': 'bg-yellow-100 text-yellow-700',
                     'Processing': 'bg-blue-100 text-blue-700',
                     'Cancelled': 'bg-red-100 text-red-700'
                 }[order.status] || 'bg-gray-100 text-gray-700';
-                tbodyHtml += `<tr><td class="font-medium">${fullName}</td><td>${order.product || ''}</td><td>${order.quantity || 0}</td><td>$${(order.total_amount || 0).toFixed(2)}</td><td><span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${order.status || ''}</span></td></tr>`;
+                tbodyHtml += '<tr><td class="font-medium">' + fullName + '</td><td>' + (order.product || '') + '</td><td>' + (order.quantity || 0) + '</td><td>$' + (order.total_amount || 0).toFixed(2) + '</td><td><span class="px-2 py-1 rounded-full text-xs font-semibold ' + statusClass + '">' + (order.status || '') + '</span></td></tr>';
             });
-            table.innerHTML = `<thead><tr><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead><tbody>${tbodyHtml}</tbody>`;
-            tableInstances[widgetId] = $(table).DataTable({ pageLength: 5, lengthMenu: [5,10,25], order: [[3,'desc']], language: { search: '', searchPlaceholder: 'Search...' } });
+            tbodyHtml += '</tbody>';
+            table.innerHTML = theadHtml + tbodyHtml;
+            tableInstances[widgetId] = $(table).DataTable({ 
+                pageLength: 5, 
+                lengthMenu: [5,10,25], 
+                order: [[3,'desc']], 
+                language: { search: '', searchPlaceholder: 'Search...' } 
+            });
         }
 
         function hexToRgb(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? { r: parseInt(result[1],16), g: parseInt(result[2],16), b: parseInt(result[3],16) } : { r:79, g:70, b:229 };
+            return result ? { r: parseInt(result[1],16), g: parseInt(result[2],16), b: parseInt(result[3],16) } : { r:99, g:102, b:241 };
         }
 
-        function addWidgetToGrid(type, x, y, settings = {}) {
+        function addWidgetToGrid(type, x, y, settings) {
             if (!grid) { console.error('Grid not initialized'); return; }
             const config = widgetConfigs[type];
             if (!config) { console.error('Unknown widget type:', type); return; }
             widgetCounter++;
-            const widgetId = `widget-${widgetCounter}`;
-            const widgetColor = settings.color || '#4F46E5';
-            const widgetTitle = settings.title || config.title;
-            const widgetWidth = settings.w || config.defaultW;
-            const widgetHeight = settings.h || config.defaultH;
+            const widgetId = 'widget-' + widgetCounter;
+            const widgetColor = settings?.color || '#6366F1';
+            const widgetTitle = settings?.title || config.title;
+            const widgetWidth = settings?.w || config.defaultW;
+            const widgetHeight = settings?.h || config.defaultH;
 
             widgetSettings[widgetId] = {
-                title: widgetTitle, color: widgetColor,
-                xAxis: settings.xAxis || 'product',
-                yAxis: settings.yAxis || 'total_amount',
-                aggregation: settings.aggregation || 'sum'
+                title: widgetTitle, 
+                color: widgetColor,
+                xAxis: settings?.xAxis || 'product',
+                yAxis: settings?.yAxis || 'total_amount',
+                aggregation: settings?.aggregation || 'sum'
             };
 
             const widgetElement = document.createElement('div');
@@ -1446,17 +1638,15 @@
             content.className = 'grid-stack-item-content';
             const header = document.createElement('div');
             header.className = 'widget-header';
-            header.innerHTML = `
-                <span class="widget-title">${widgetTitle}</span>
-                <div class="widget-actions">
-                    <button class="widget-action-btn settings-btn" data-widget-id="${widgetId}" title="Settings">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    </button>
-                    <button class="widget-action-btn delete" data-widget-id="${widgetId}" title="Delete">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
-                </div>
-            `;
+            header.innerHTML = '<span class="widget-title">' + widgetTitle + '</span>' +
+                '<div class="widget-actions">' +
+                    '<button class="widget-action-btn settings-btn" data-widget-id="' + widgetId + '" title="Settings">' +
+                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' +
+                    '</button>' +
+                    '<button class="widget-action-btn delete" data-widget-id="' + widgetId + '" title="Delete">' +
+                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+                    '</button>' +
+                '</div>';
             content.appendChild(header);
             content.appendChild(createWidgetContent(type, widgetId, widgetSettings[widgetId]));
             widgetElement.appendChild(content);
@@ -1470,13 +1660,13 @@
         // ==================== SETTINGS PANEL ====================
         function openSettingsPanel(widgetId) {
             currentWidgetId = widgetId;
-            const widget = document.querySelector(`[data-widget-id="${widgetId}"]`);
+            const widget = document.querySelector('[data-widget-id="' + widgetId + '"]');
             if (!widget) return;
             const type = widget.dataset.widgetType;
             const config = widgetConfigs[type];
             const settings = widgetSettings[widgetId] || {};
             document.getElementById('settingTitle').value = settings.title || config.title;
-            document.getElementById('settingColor').value = settings.color || '#4F46E5';
+            document.getElementById('settingColor').value = settings.color || '#6366F1';
             document.getElementById('settingWidth').value = widget.getAttribute('gs-w');
             document.getElementById('settingHeight').value = widget.getAttribute('gs-h');
             if (settings.xAxis) document.getElementById('settingXAxis').value = settings.xAxis;
@@ -1498,7 +1688,7 @@
 
         function applySettings() {
             if (!currentWidgetId) return;
-            const widget = document.querySelector(`[data-widget-id="${currentWidgetId}"]`);
+            const widget = document.querySelector('[data-widget-id="' + currentWidgetId + '"]');
             if (!widget) return;
             const newTitle = document.getElementById('settingTitle').value;
             const newColor = document.getElementById('settingColor').value;
@@ -1539,7 +1729,7 @@
         
         function confirmDelete() {
             if (!widgetToDelete || !grid) return;
-            const widget = document.querySelector(`[data-widget-id="${widgetToDelete}"]`);
+            const widget = document.querySelector('[data-widget-id="' + widgetToDelete + '"]');
             if (widget) {
                 if (chartInstances[widgetToDelete]) { chartInstances[widgetToDelete].destroy(); delete chartInstances[widgetToDelete]; }
                 if (tableInstances[widgetToDelete]) { tableInstances[widgetToDelete].destroy(); delete tableInstances[widgetToDelete]; }
@@ -1556,30 +1746,56 @@
                 showToast('Not authenticated or grid not ready', 'error');
                 return; 
             }
+            isSelfChange = true;
             const widgets = grid.engine.nodes.map(node => {
                 const el = node.el;
                 const widgetId = el.dataset.widgetId;
                 const settings = widgetSettings[widgetId] || {};
                 return { widget_type: el.dataset.widgetType, pos_x: node.x, pos_y: node.y, width: node.w, height: node.h, settings };
             });
-            const { data: dashboard, error: dashError } = await supabaseClient
+
+            let { data: existingDash, error: fetchError } = await supabaseClient
                 .from('dashboard_configs')
-                .insert({ user_id: currentUserId, name: 'My Dashboard', created_at: new Date() })
-                .select().single();
-            if (dashError) { 
-                console.error(dashError); 
-                showToast('Error saving dashboard', 'error'); 
-                return; 
+                .select('id')
+                .eq('user_id', currentUserId)
+                .maybeSingle();
+
+            if (fetchError) {
+                console.error(fetchError);
+                showToast('Error checking existing dashboard', 'error');
+                isSelfChange = false;
+                return;
             }
-            const dashboardId = dashboard.id;
+
+            let dashboardId;
+            if (existingDash) {
+                dashboardId = existingDash.id;
+                await supabaseClient.from('dashboard_widgets').delete().eq('dashboard_id', dashboardId);
+            } else {
+                const { data: newDash, error: createError } = await supabaseClient
+                    .from('dashboard_configs')
+                    .insert({ user_id: currentUserId, name: 'My Dashboard', created_at: new Date() })
+                    .select()
+                    .single();
+                if (createError) {
+                    console.error(createError);
+                    showToast('Error creating dashboard', 'error');
+                    isSelfChange = false;
+                    return;
+                }
+                dashboardId = newDash.id;
+                currentDashboardId = dashboardId;
+            }
+
             const widgetsToInsert = widgets.map(w => ({ dashboard_id: dashboardId, ...w }));
             const { error: widgetError } = await supabaseClient.from('dashboard_widgets').insert(widgetsToInsert);
-            if (widgetError) { 
-                console.error(widgetError); 
-                showToast('Widget save failed', 'error'); 
-                return; 
+            if (widgetError) {
+                console.error(widgetError);
+                showToast('Widget save failed', 'error');
+            } else {
+                showToast('Dashboard saved', 'success');
             }
-            showToast('Dashboard saved', 'success');
+            setTimeout(() => { isSelfChange = false; }, 500);
         }
 
         // ==================== LOAD SAVED CONFIG ====================
@@ -1592,16 +1808,60 @@
                 .order('created_at', { ascending: false })
                 .limit(1);
             if (error || !dashboards || dashboards.length === 0) return;
-            const dashboardId = dashboards[0].id;
+            currentDashboardId = dashboards[0].id;
             const { data: widgets, error: widgetError } = await supabaseClient
                 .from('dashboard_widgets')
                 .select('*')
-                .eq('dashboard_id', dashboardId);
+                .eq('dashboard_id', currentDashboardId);
             if (widgetError || !widgets) return;
             widgets.forEach(w => addWidgetToGrid(w.widget_type, w.pos_x, w.pos_y, { ...w.settings, w: w.width, h: w.height }));
         }
 
-        function showToast(message, type = 'info') {
+        // ==================== REAL‑TIME COLLABORATION ====================
+        function setupRealtimeSubscription() {
+            if (!currentDashboardId) return;
+            if (realtimeSubscription) realtimeSubscription.unsubscribe();
+            realtimeSubscription = supabaseClient
+                .channel('dashboard-widgets-sync')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'dashboard_widgets',
+                    filter: 'dashboard_id=eq.' + currentDashboardId
+                }, (payload) => {
+                    if (isSelfChange) return;
+                    console.log('External change:', payload);
+                    reloadDashboardFromDB();
+                })
+                .subscribe();
+        }
+
+        async function reloadDashboardFromDB() {
+            if (!currentDashboardId) return;
+            const { data: widgets, error } = await supabaseClient
+                .from('dashboard_widgets')
+                .select('*')
+                .eq('dashboard_id', currentDashboardId);
+            if (error) {
+                console.error('Error reloading widgets:', error);
+                return;
+            }
+            grid.removeAll();
+            Object.values(chartInstances).forEach(ch => ch?.destroy());
+            Object.values(tableInstances).forEach(tb => tb?.destroy());
+            Object.keys(chartInstances).forEach(k => delete chartInstances[k]);
+            Object.keys(tableInstances).forEach(k => delete tableInstances[k]);
+            widgets.forEach(w => {
+                addWidgetToGrid(w.widget_type, w.pos_x, w.pos_y, {
+                    ...w.settings,
+                    w: w.width,
+                    h: w.height,
+                    title: w.settings?.title || widgetConfigs[w.widget_type]?.title
+                });
+            });
+        }
+
+        function showToast(message, type) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
             const toastIcon = document.getElementById('toastIcon');
@@ -1610,8 +1870,6 @@
                 toast.className = 'toast show';
                 if (type === 'success') toast.classList.add('success');
                 else if (type === 'error') toast.classList.add('error');
-                
-                // Update icon based on type
                 if (toastIcon) {
                     if (type === 'success') {
                         toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
@@ -1619,14 +1877,14 @@
                         toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>';
                     }
                 }
-                
                 setTimeout(() => toast.classList.remove('show', 'success', 'error'), 3000);
             }
         }
 
         // ==================== DRAG & DROP ====================
         function setupDragAndDrop() {
-            document.querySelectorAll('.widget-card[draggable="true"]').forEach(card => {
+            const widgetCards = document.querySelectorAll('.widget-card[draggable="true"]');
+            widgetCards.forEach(card => {
                 card.addEventListener('dragstart', function(e) { 
                     e.dataTransfer.setData('text/plain', this.dataset.widgetType); 
                     this.classList.add('dragging'); 
@@ -1637,9 +1895,17 @@
             });
             const gridElement = document.getElementById('dashboardGrid');
             if (!gridElement) return;
-            gridElement.addEventListener('dragover', e => e.preventDefault());
-            gridElement.addEventListener('drop', e => {
+            
+            gridElement.addEventListener('dragover', function(e) {
                 e.preventDefault();
+                gridElement.classList.add('drag-over');
+            });
+            gridElement.addEventListener('dragleave', function(e) {
+                gridElement.classList.remove('drag-over');
+            });
+            gridElement.addEventListener('drop', function(e) {
+                e.preventDefault();
+                gridElement.classList.remove('drag-over');
                 const type = e.dataTransfer.getData('text/plain');
                 if (type) addWidgetToGrid(type);
             });
@@ -1677,193 +1943,105 @@
             const pdfBtn = document.getElementById('exportPdfBtn');
             const excelBtn = document.getElementById('exportExcelBtn');
             
-            // Toggle dropdown
-            exportBtn.addEventListener('click', (e) => {
+            exportBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 dropdown.classList.toggle('open');
             });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
+            document.addEventListener('click', function(e) {
                 if (!dropdown.contains(e.target) && !exportBtn.contains(e.target)) {
                     dropdown.classList.remove('open');
                 }
             });
-            
-            // PDF Export
-            pdfBtn.addEventListener('click', () => {
+            pdfBtn.addEventListener('click', function() {
                 dropdown.classList.remove('open');
                 exportDashboardAsPDF();
             });
-            
-            // Excel Export
-            excelBtn.addEventListener('click', () => {
+            excelBtn.addEventListener('click', function() {
                 dropdown.classList.remove('open');
                 exportDashboardAsExcel();
             });
         }
 
         function exportDashboardAsPDF() {
-            // Check dependencies
-            if (typeof html2canvas === 'undefined') {
-                showToast('html2canvas library not loaded', 'error');
-                return;
-            }
-            if (typeof window.jspdf === 'undefined') {
-                showToast('jsPDF library not loaded', 'error');
-                return;
-            }
-            
             const element = document.getElementById('dashboardGrid');
             if (!element) {
                 showToast('Dashboard grid not found', 'error');
                 return;
             }
-            
-            if (!window.grid || window.grid.engine.nodes.length === 0) {
-                showToast('No widgets to export. Add some widgets first.', 'error');
+            if (!grid || grid.engine.nodes.length === 0) {
+                showToast('No widgets to export.', 'error');
                 return;
             }
-            
             showToast('Generating PDF...', 'info');
-            
-            // Hide empty state temporarily
             const emptyState = document.getElementById('emptyState');
             const prevDisplay = emptyState ? emptyState.style.display : '';
             if (emptyState) emptyState.style.display = 'none';
-            
-            html2canvas(element, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                logging: false,
-                allowTaint: true,
-                useCORS: true,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-            }).then(canvas => {
-                try {
+            html2canvas(element, { scale: 2, backgroundColor: '#ffffff', logging: false })
+                .then(function(canvas) {
                     const imgData = canvas.toDataURL('image/png');
-                    const { jsPDF } = window.jspdf;
-                    
-                    // Calculate dimensions
-                    const imgWidth = canvas.width;
-                    const imgHeight = canvas.height;
-                    
-                    // Use landscape orientation for dashboards
-                    const pdf = new jsPDF({
-                        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
-                        unit: 'px',
-                        format: [imgWidth * 0.75, imgHeight * 0.75]
-                    });
-                    
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth * 0.75, imgHeight * 0.75);
-                    pdf.save('dashboard-report.pdf');
-                    
-                    showToast('PDF exported successfully', 'success');
-                } catch (err) {
-                    console.error('PDF generation error:', err);
+                    const jsPDF = window.jspdf.jsPDF;
+                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width * 0.75, canvas.height * 0.75] });
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+                    pdf.save('dashboard-config.pdf');
+                    showToast('PDF exported', 'success');
+                })
+                .catch(function(error) {
+                    console.error(error);
                     showToast('Failed to generate PDF', 'error');
-                }
-            }).catch(error => {
-                console.error('html2canvas error:', error);
-                showToast('Failed to capture dashboard', 'error');
-            }).finally(() => {
-                // Restore empty state
-                if (emptyState) emptyState.style.display = prevDisplay;
-            });
+                })
+                .finally(function() {
+                    if (emptyState) emptyState.style.display = prevDisplay;
+                });
         }
 
         function exportDashboardAsExcel() {
-            // Check dependency
-            if (typeof XLSX === 'undefined') {
-                showToast('XLSX library not loaded', 'error');
+            if (!ordersData.length) {
+                showToast('No data to export', 'error');
                 return;
             }
-            
-            // Check data
-            if (!window.ordersData || window.ordersData.length === 0) {
-                showToast('No data available to export', 'error');
-                return;
-            }
-            
             try {
-                // Prepare data for export (remove internal fields)
-                const exportData = window.ordersData.map(order => ({
-                    'Customer': `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A',
-                    'Product': order.product || '',
-                    'Quantity': order.quantity || 0,
-                    'Unit Price': order.unit_price || 0,
-                    'Total Amount': order.total_amount || 0,
-                    'Status': order.status || '',
-                    'Order Date': order.created_at ? new Date(order.created_at).toLocaleDateString() : ''
-                }));
-                
-                // Create workbook
-                const wb = XLSX.utils.book_new();
+                const exportData = ordersData.map(function(order) {
+                    return {
+                        'Customer': (order.first_name || '') + ' ' + (order.last_name || ''),
+                        'Product': order.product,
+                        'Quantity': order.quantity,
+                        'Unit Price': order.unit_price,
+                        'Total Amount': order.total_amount,
+                        'Status': order.status,
+                        'Order Date': order.created_at ? new Date(order.created_at).toLocaleDateString() : ''
+                    };
+                });
                 const ws = XLSX.utils.json_to_sheet(exportData);
-                
-                // Set column widths
-                ws['!cols'] = [
-                    { wch: 20 }, // Customer
-                    { wch: 15 }, // Product
-                    { wch: 10 }, // Quantity
-                    { wch: 12 }, // Unit Price
-                    { wch: 12 }, // Total Amount
-                    { wch: 12 }, // Status
-                    { wch: 15 }  // Order Date
-                ];
-                
+                const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Orders');
-                XLSX.writeFile(wb, 'dashboard-data.xlsx');
-                
-                showToast('Excel file exported successfully', 'success');
+                XLSX.writeFile(wb, 'dashboard-orders.xlsx');
+                showToast('Excel exported', 'success');
             } catch (error) {
-                console.error('Excel generation error:', error);
-                showToast('Failed to generate Excel file', 'error');
+                console.error(error);
+                showToast('Failed to generate Excel', 'error');
             }
         }
 
         // ==================== EVENT LISTENERS SETUP ====================
         function setupEventListeners() {
-            // Header buttons
             document.getElementById('autoGenerateBtn').addEventListener('click', autoGenerateDashboard);
             document.getElementById('saveConfigBtn').addEventListener('click', saveConfiguration);
-            
-            // Settings panel
             document.getElementById('closeSettingsBtn').addEventListener('click', closeSettingsPanel);
             document.getElementById('settingsOverlay').addEventListener('click', closeSettingsPanel);
             document.getElementById('applySettingsBtn').addEventListener('click', applySettings);
             document.getElementById('cancelSettingsBtn').addEventListener('click', closeSettingsPanel);
-            
-            // Delete modal
             document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
-            document.getElementById('deleteModal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('deleteModal')) {
-                    closeDeleteModal();
-                }
+            document.getElementById('deleteModal').addEventListener('click', function(e) {
+                if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
             });
-            
-            // Widget actions (delegation)
-            document.getElementById('dashboardGrid').addEventListener('click', (e) => {
+            document.getElementById('dashboardGrid').addEventListener('click', function(e) {
                 const settingsBtn = e.target.closest('.settings-btn');
                 const deleteBtn = e.target.closest('.delete');
-                
-                if (settingsBtn) {
-                    e.stopPropagation();
-                    openSettingsPanel(settingsBtn.dataset.widgetId);
-                }
-                
-                if (deleteBtn) {
-                    e.stopPropagation();
-                    openDeleteModal(deleteBtn.dataset.widgetId);
-                }
+                if (settingsBtn) openSettingsPanel(settingsBtn.dataset.widgetId);
+                if (deleteBtn) openDeleteModal(deleteBtn.dataset.widgetId);
             });
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
+            document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeSettingsPanel();
                     closeDeleteModal();
@@ -1883,6 +2061,7 @@
             setupExportDropdown();
             setupEventListeners();
             await loadSavedConfig();
+            setupRealtimeSubscription();
         });
     </script>
 </body>
